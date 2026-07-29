@@ -278,43 +278,57 @@
           .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
       },
 
-      // จัดกลุ่มตามหัวข้อ: คอลัมน์แรก (A) = หัวข้อ (แสดงครั้งเดียว ไม่ซ้ำ),
-      // คอลัมน์ที่เหลือ (B, C, ...) = รายการย่อยใต้หัวข้อนั้น
-      // แถวที่คอลัมน์ A ว่าง จะถือว่าเป็นรายการย่อยของหัวข้อก่อนหน้า
+      // จัดกลุ่มแบบหลายชั้น ยุบหัวข้อที่ซ้ำในทุกคอลัมน์:
+      // คอลัมน์ A = หัวข้อชั้นที่ 1, B = หัวข้อชั้นที่ 2, ... คอลัมน์สุดท้ายที่มีข้อมูล = รายการย่อย
+      // ค่าที่ซ้ำกันในแต่ละชั้นจะแสดงครั้งเดียว, เซลล์ว่าง = สืบทอดหัวข้อจากแถวก่อนหน้า
       renderGroupedList(grid) {
         if (!grid || !grid.rows || grid.rows.length === 0) return '';
         const esc = v => this.escapeHtml(v).replace(/\n/g, '<br>');
 
-        const groups = [];
-        const byTitle = {};
-        let cur = null;
+        // หาคอลัมน์สุดท้ายที่มีข้อมูลจริง (กำหนดจำนวนชั้น)
+        let lastCol = 0;
         grid.rows.forEach(r => {
-          const head = (r[0] || '').trim();
-          const rest = r.slice(1).map(c => (c || '').trim()).filter(c => c !== '');
-          if (head !== '') {
-            // หัวข้อที่ซ้ำกันให้รวมอยู่กลุ่มเดียว (แสดงหัวข้อรอบเดียว)
-            if (byTitle[head]) {
-              cur = byTitle[head];
-            } else {
-              cur = { title: head, items: [] };
-              byTitle[head] = cur;
-              groups.push(cur);
-            }
-          } else if (!cur) {
-            cur = { title: '', items: [] };
-            groups.push(cur);
+          for (let i = 0; i < r.length; i++) {
+            if ((r[i] || '').trim() !== '') lastCol = Math.max(lastCol, i);
           }
-          if (rest.length) cur.items.push(rest);
         });
 
-        return groups.map(g => {
-          const items = g.items.map(parts =>
-            `<li>${parts.map(esc).join(' <span class="text-slate-400">—</span> ')}</li>`).join('');
-          return `<div class="mb-4 last:mb-0">
-            ${g.title ? `<div class="font-bold text-teal-800 mb-1.5">${esc(g.title)}</div>` : ''}
-            ${items ? `<ul class="list-disc pl-6 space-y-1 text-slate-700">${items}</ul>` : ''}
-          </div>`;
-        }).join('');
+        // จัดกลุ่มแถวตามค่าในคอลัมน์ col (ยุบค่าซ้ำ, ว่าง = ต่อจากกลุ่มก่อนหน้า)
+        const groupBy = (rows, col) => {
+          const groups = [];
+          const byKey = {};
+          let cur = null;
+          rows.forEach(r => {
+            const val = (r[col] || '').trim();
+            if (val !== '') {
+              if (byKey[val]) { cur = byKey[val]; }
+              else { cur = { title: val, rows: [] }; byKey[val] = cur; groups.push(cur); }
+            } else if (!cur) {
+              cur = { title: '', rows: [] }; groups.push(cur);
+            }
+            cur.rows.push(r);
+          });
+          return groups;
+        };
+
+        const renderLevel = (rows, col) => {
+          // ชั้นสุดท้าย = รายการย่อย (bullet)
+          if (col >= lastCol) {
+            const items = rows.map(r => (r[col] || '').trim()).filter(v => v !== '');
+            if (!items.length) return '';
+            return `<ul class="list-disc pl-5 space-y-1 text-slate-700">${
+              items.map(v => `<li>${esc(v)}</li>`).join('')}</ul>`;
+          }
+          return groupBy(rows, col).map(g => {
+            const inner = renderLevel(g.rows, col + 1);
+            const weight = col === 0 ? 'font-bold text-teal-800' : 'font-semibold text-slate-600';
+            const title = g.title ? `<div class="${weight} mb-1">${esc(g.title)}</div>` : '';
+            const wrap = col === 0 ? 'mb-4 last:mb-0' : 'mb-2 pl-3 border-l-2 border-teal-100';
+            return `<div class="${wrap}">${title}${inner}</div>`;
+          }).join('');
+        };
+
+        return renderLevel(grid.rows, 0);
       },
 
       // กล่องแบบพับเก็บได้ (native <details>) สำหรับคำชี้แจง / วัตถุประสงค์และนิยาม
