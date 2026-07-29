@@ -169,7 +169,7 @@
           <i class="fa-solid fa-arrow-left text-xl"></i>
         </button>
         <div>
-          <div class="text-sm text-cyan-600 font-bold mb-1" id="eval-phase-label">Phase Label</div>
+          <div class="text-base text-cyan-600 font-bold mb-1" id="eval-phase-label">Phase Label</div>
           <h2 class="text-2xl font-bold text-slate-800 mb-2" id="eval-tool-name">Tool Name</h2>
           <div class="flex items-center gap-3" id="eval-status-container"></div>
         </div>
@@ -784,7 +784,7 @@
           if (item.part && item.part !== '-' && item.part !== lastPart) {
             lastPart = item.part;
             const sectionTr = document.createElement('tr');
-            sectionTr.innerHTML = `<td colspan="4" class="px-4 py-2 bg-gradient-to-r from-teal-50 to-cyan-50 text-teal-800 font-bold text-sm border-y border-teal-100">${this.escapeHtml(item.part)}</td>`;
+            sectionTr.innerHTML = `<td colspan="4" class="px-4 py-2 bg-gradient-to-r from-teal-50 to-cyan-50 text-teal-800 font-bold text-base border-y border-teal-100">${this.escapeHtml(item.part)}</td>`;
             tbody.appendChild(sectionTr);
           }
 
