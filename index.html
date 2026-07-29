@@ -157,6 +157,7 @@
   <template id="tpl-tool-item">
     <div class="p-5 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer tool-row">
       <div class="flex-1">
+        <div class="inline-block text-xs font-bold text-teal-700 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-full px-2.5 py-0.5 mb-1.5 tool-set"></div>
         <h4 class="text-slate-800 font-medium text-lg leading-tight mb-1 tool-name">Tool Name</h4>
         <p class="text-sm text-slate-500 mb-2 tool-detail hidden"></p>
         <div class="tool-status"></div>
@@ -768,6 +769,7 @@
             const toolNode = this.getTemplate('tpl-tool-item');
             const status = appState.toolStatuses[uid]?.[tool.id] || 'pending';
             
+            toolNode.querySelector('.tool-set').textContent = `ชุดที่ ${tool.id}`;
             toolNode.querySelector('.tool-name').textContent = tool.name;
             const detailEl = toolNode.querySelector('.tool-detail');
             if (tool.detail && tool.detail.trim() !== '') {
