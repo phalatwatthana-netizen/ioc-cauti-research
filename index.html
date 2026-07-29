@@ -990,6 +990,8 @@
           html += `</div></div>`;
         }
         else if (appState.adminTab === 'items') {
+          // เกณฑ์ผ่าน IOC จากชีต Settings (IOC_Pass) ถ้าไม่มีใช้ 0.5
+          const passThreshold = parseFloat(this.S('IOC_Pass', '0.5')) || 0.5;
           html += `<div class="space-y-8"><h3 class="text-lg font-bold text-slate-800 border-l-4 border-teal-500 pl-3">ชีตรวมการประเมินค่าดัชนี IOC (รายเครื่องมือและรายข้อ)</h3>`;
           MOCK_DATA.tools.forEach(tool => {
             const toolItems = MOCK_DATA.items.filter(i => i.toolId === tool.id);
@@ -1025,9 +1027,10 @@
 
               MOCK_EXPERTS.forEach(exp => {
                 const evalData = appState.evaluations[`${exp.id}_${tool.id}_${item.id}`];
-                if (evalData && evalData.score !== undefined) {
+                // นับเฉพาะช่องที่ให้คะแนนจริง (+1/0/-1) ไม่นับช่องว่าง/null
+                if (evalData && evalData.score !== undefined && evalData.score !== null && evalData.score !== '') {
                   respondents++;
-                  sum += evalData.score;
+                  sum += Number(evalData.score);
                   if (evalData.score === 1) plus++;
                   if (evalData.score === 0) zero++;
                   if (evalData.score === -1) minus++;
@@ -1038,12 +1041,12 @@
                 }
               });
 
-              const totalE = MOCK_EXPERTS.length;
-              const ioc = respondents > 0 ? (sum / totalE).toFixed(2) : '-';
+              // IOC = ผลรวมคะแนน ÷ จำนวนผู้เชี่ยวชาญที่ให้คะแนนจริง (ตามชีต)
+              const ioc = respondents > 0 ? (sum / respondents).toFixed(2) : '-';
               let iocStatus = '-', statusClass = 'text-gray-400';
-              
+
               if (ioc !== '-') {
-                if (parseFloat(ioc) >= 0.5) {
+                if (parseFloat(ioc) >= passThreshold) {
                   iocStatus = 'ใช้ได้';
                   statusClass = 'text-green-600 font-bold bg-green-50 px-2 py-1 rounded';
                 } else {
