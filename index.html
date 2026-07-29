@@ -687,14 +687,18 @@
               detailEl.classList.remove('hidden');
             }
             toolNode.querySelector('.tool-status').innerHTML = this.getStatusBadgeHTML(status);
-            
+
             const btn = toolNode.querySelector('.action-btn');
+            const btnBase = 'action-btn whitespace-nowrap px-5 py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm';
             if (status === 'submitted') {
+              btn.className = btnBase + ' bg-white border border-teal-500 text-teal-600 hover:bg-teal-50';
               btn.innerHTML = `<i class="fa-solid fa-pen"></i> แก้ไขการประเมิน`;
             } else if (status === 'draft') {
-               btn.innerHTML = `<i class="fa-solid fa-play"></i> ทำต่อให้เสร็จ`;
+              btn.className = btnBase + ' bg-yellow-100 border border-yellow-300 text-yellow-800 hover:bg-yellow-200';
+              btn.innerHTML = `<i class="fa-solid fa-play"></i> ทำต่อให้เสร็จ`;
             } else {
-              btn.innerHTML = 'เริ่มประเมิน';
+              btn.className = btnBase + ' bg-gradient-to-r from-teal-500 to-cyan-600 text-white hover:from-teal-600 hover:to-cyan-700';
+              btn.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> เริ่มประเมิน`;
             }
 
             toolNode.querySelector('.tool-row').onclick = () => this.openEvaluation(tool.id);
