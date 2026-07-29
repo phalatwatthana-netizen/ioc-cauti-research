@@ -140,6 +140,11 @@
       </div>
       <div id="info-sections" class="space-y-4"></div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="phases-container"></div>
+      <div class="pt-2">
+        <button onclick="app.downloadAllForms()" class="w-full px-5 py-3.5 rounded-xl font-bold text-base flex items-center justify-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-700 text-white hover:from-teal-700 hover:to-cyan-800 transition-colors shadow-md">
+          <i class="fa-solid fa-file-pdf"></i> ดาวน์โหลดแบบประเมินทั้งหมด (PDF)
+        </button>
+      </div>
     </div>
   </template>
 
@@ -866,34 +871,8 @@
         this.showToast('success', 'ดาวน์โหลดแบบฟอร์มแล้ว — เปิดไฟล์แล้วสั่งพิมพ์ได้เลย');
       },
 
-      buildPrintableForm(tool, phase, items) {
-        const esc = v => this.escapeHtml(v);
-        // วัตถุประสงค์ที่ตรงกับเครื่องมือนี้
-        const rowsDef = (appState.definitions && appState.definitions.rows) || [];
-        const codeItem = items.find(i => i.objective && i.objective !== '-');
-        const code = codeItem ? String(codeItem.objective).trim() : '';
-        let objText = '';
-        if (code) {
-          const m = rowsDef.find(r => /วัตถุประสงค์/.test(r[0] || '') && String(r[1] || '').trim() === code);
-          if (m) objText = m[2] || '';
-        }
-        // ตัวตาราง + แถวหัวข้อ ตอน/ด้าน
-        let body = '', lastPart = null, n = 0;
-        items.forEach(item => {
-          if (item.part && item.part !== '-' && item.part !== lastPart) {
-            lastPart = item.part;
-            body += `<tr><td class="sec" colspan="6">${esc(item.part)}</td></tr>`;
-          }
-          n++;
-          body += `<tr><td class="c">${n}</td><td>${esc(item.text)}</td><td class="ck"></td><td class="ck"></td><td class="ck"></td><td></td></tr>`;
-        });
-        const title = this.S('app_title', 'ระบบประเมินเครื่องมือวิจัย (IOC)');
-        return `<!DOCTYPE html>
-<html lang="th"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>แบบประเมิน IOC ชุดที่ ${esc(tool.id)}</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
+      formStyle() {
+        return `<style>
   * { box-sizing: border-box; }
   body { font-family: 'Sarabun','TH Sarabun New',sans-serif; color:#111; margin:24px; line-height:1.5; }
   h1 { font-size:20px; margin:0 0 4px; }
@@ -908,28 +887,98 @@
   td.c { text-align:center; width:34px; }
   td.ck { width:44px; height:34px; text-align:center; }
   td.sec { background:#f0fdfa; font-weight:700; }
-  .sign { margin-top:28px; font-size:14px; text-align:right; }
-  @media print { body { margin:1cm; } a { display:none; } }
-</style></head>
-<body>
-  <h1>${esc(title)}</h1>
+  .sign { margin-top:24px; margin-bottom:8px; font-size:14px; text-align:right; }
+  .form-page { page-break-after: always; }
+  .form-page:last-child { page-break-after: auto; }
+  .toolbar { position:sticky; top:0; background:#0f766e; color:#fff; padding:10px 16px; text-align:center; z-index:10; }
+  .toolbar button { font-size:15px; font-weight:700; padding:8px 20px; border:0; border-radius:8px; background:#fff; color:#0f766e; cursor:pointer; }
+  @media print { body { margin:1cm; } .toolbar { display:none; } }
+</style>`;
+      },
+
+      // เนื้อหาแบบฟอร์มของเครื่องมือ 1 ชุด (หัว + ตาราง + ลงชื่อ) 1 หน้า
+      buildToolSectionHtml(tool, phase, items) {
+        const esc = v => this.escapeHtml(v);
+        const rowsDef = (appState.definitions && appState.definitions.rows) || [];
+        const codeItem = items.find(i => i.objective && i.objective !== '-');
+        const code = codeItem ? String(codeItem.objective).trim() : '';
+        let objText = '';
+        if (code) {
+          const m = rowsDef.find(r => /วัตถุประสงค์/.test(r[0] || '') && String(r[1] || '').trim() === code);
+          if (m) objText = m[2] || '';
+        }
+        let body = '', lastPart = null, n = 0;
+        items.forEach(item => {
+          if (item.part && item.part !== '-' && item.part !== lastPart) {
+            lastPart = item.part;
+            body += `<tr><td class="sec" colspan="6">${esc(item.part)}</td></tr>`;
+          }
+          n++;
+          body += `<tr><td class="c">${n}</td><td>${esc(item.text)}</td><td class="ck"></td><td class="ck"></td><td class="ck"></td><td></td></tr>`;
+        });
+        return `<div class="form-page">
   <h2>แบบประเมินความสอดคล้อง (IOC) — เครื่องมือชุดที่ ${esc(tool.id)}</h2>
   <div class="meta"><b>เครื่องมือ:</b> ${esc(tool.name)}</div>
   <div class="meta"><b>ระยะ:</b> ${esc(phase ? phase.label : '-')}</div>
   ${objText ? `<div class="obj"><b>วัตถุประสงค์:</b> ${esc(objText)}</div>` : ''}
-  <div class="names">
-    <div>ชื่อผู้ทรงคุณวุฒิ ...............................................</div>
-    <div>วันที่ ............................</div>
-  </div>
+  <div class="names"><div>ชื่อผู้ทรงคุณวุฒิ ...............................................</div><div>วันที่ ............................</div></div>
   <div class="crit"><b>เกณฑ์การให้คะแนน:</b> +1 = สอดคล้อง/เหมาะสม &nbsp;|&nbsp; 0 = ไม่แน่ใจ &nbsp;|&nbsp; -1 = ไม่สอดคล้อง (ทำเครื่องหมาย ✓ ในช่อง)</div>
-  <table>
-    <thead><tr>
-      <th>ข้อ</th><th>รายการประเมิน</th><th>+1</th><th>0</th><th>-1</th><th>ข้อเสนอแนะ</th>
-    </tr></thead>
-    <tbody>${body}</tbody>
-  </table>
+  <table><thead><tr><th>ข้อ</th><th>รายการประเมิน</th><th>+1</th><th>0</th><th>-1</th><th>ข้อเสนอแนะ</th></tr></thead><tbody>${body}</tbody></table>
   <div class="sign">ลงชื่อ ............................................... ผู้ประเมิน</div>
+</div>`;
+      },
+
+      buildPrintableForm(tool, phase, items) {
+        const esc = v => this.escapeHtml(v);
+        const title = this.S('app_title', 'ระบบประเมินเครื่องมือวิจัย (IOC)');
+        return `<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แบบประเมิน IOC ชุดที่ ${esc(tool.id)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+${this.formStyle()}</head>
+<body><h1>${esc(title)}</h1>${this.buildToolSectionHtml(tool, phase, items)}</body></html>`;
+      },
+
+      // รวมแบบประเมินทุกชุดเป็นเอกสารเดียว (แต่ละชุดขึ้นหน้าใหม่)
+      buildAllFormsHtml() {
+        const esc = v => this.escapeHtml(v);
+        const title = this.S('app_title', 'ระบบประเมินเครื่องมือวิจัย (IOC)');
+        const tools = MOCK_DATA.tools || [];
+        const sections = tools.map(tool => {
+          const items = MOCK_DATA.items.filter(i => i.toolId === tool.id);
+          const phase = MOCK_DATA.phases.find(p => p.id === tool.phaseId);
+          return this.buildToolSectionHtml(tool, phase, items);
+        }).join('');
+        return `<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แบบประเมิน IOC — รวมทุกชุด</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+${this.formStyle()}</head>
+<body>
+  <div class="toolbar"><button onclick="window.print()">🖨 บันทึกเป็น PDF / พิมพ์</button></div>
+  <h1>${esc(title)}</h1>
+  <div class="meta" style="margin-bottom:12px;">แบบประเมินความสอดคล้อง (IOC) — รวมทุกชุด (${tools.length} ชุด)</div>
+  ${sections}
 </body></html>`;
+      },
+
+      downloadAllForms() {
+        const html = this.buildAllFormsHtml();
+        const w = window.open('', '_blank');
+        if (w) {
+          w.document.open();
+          w.document.write(html);
+          w.document.close();
+          this.showToast('success', 'เปิดแบบประเมินรวมแล้ว — กดปุ่ม "บันทึกเป็น PDF" ด้านบน');
+        } else {
+          const blob = new Blob(['﻿' + html], { type: 'text/html;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = 'แบบประเมิน-IOC-รวมทุกชุด.html';
+          document.body.appendChild(a); a.click(); a.remove();
+          URL.revokeObjectURL(url);
+          this.showToast('success', 'ดาวน์โหลดแล้ว — เปิดไฟล์แล้วสั่งพิมพ์/บันทึกเป็น PDF');
+        }
       },
 
       renderEvaluationForm() {
