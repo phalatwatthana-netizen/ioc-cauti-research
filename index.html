@@ -105,6 +105,7 @@
           </div>
         </div>
       </div>
+      <div id="info-sections" class="space-y-4"></div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="phases-container"></div>
     </div>
   </template>
@@ -123,7 +124,8 @@
   <template id="tpl-tool-item">
     <div class="p-5 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer tool-row">
       <div class="flex-1">
-        <h4 class="text-slate-800 font-medium text-lg leading-tight mb-2 tool-name">Tool Name</h4>
+        <h4 class="text-slate-800 font-medium text-lg leading-tight mb-1 tool-name">Tool Name</h4>
+        <p class="text-sm text-slate-500 mb-2 tool-detail hidden"></p>
         <div class="tool-status"></div>
       </div>
       <button class="whitespace-nowrap px-4 py-2 bg-white border border-teal-500 text-teal-600 rounded-lg hover:bg-teal-50 transition-colors font-medium text-sm flex items-center justify-center gap-1 shadow-sm action-btn"></button>
@@ -270,6 +272,47 @@
         if (title) document.title = title;
       },
 
+      escapeHtml(v) {
+        return String(v === null || v === undefined ? '' : v)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      },
+
+      // สร้างตารางจากข้อมูล grid { headers, rows } (แถวแรกเป็นหัวตาราง)
+      renderGridTable(grid) {
+        if (!grid || !grid.rows || grid.rows.length === 0) return '';
+        const esc = v => this.escapeHtml(v).replace(/\n/g, '<br>');
+        const head = (grid.headers || []).map(h =>
+          `<th class="p-3 text-left font-bold text-slate-700 border-b border-gray-200 bg-slate-50 align-top">${esc(h)}</th>`).join('');
+        const body = grid.rows.map(r =>
+          `<tr class="hover:bg-slate-50">${r.map(c =>
+            `<td class="p-3 border-b border-gray-100 text-slate-700 align-top">${esc(c)}</td>`).join('')}</tr>`).join('');
+        return `<div class="overflow-x-auto"><table class="w-full text-sm border-collapse">
+          ${head ? `<thead><tr>${head}</tr></thead>` : ''}<tbody>${body}</tbody></table></div>`;
+      },
+
+      // กล่องแบบพับเก็บได้ (native <details>) สำหรับคำชี้แจง / วัตถุประสงค์และนิยาม
+      renderInfoPanel(title, icon, grid) {
+        const table = this.renderGridTable(grid);
+        if (!table) return '';
+        return `<details class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group" open>
+          <summary class="cursor-pointer select-none px-5 py-3 font-bold text-teal-800 bg-teal-50 border-b border-teal-100 flex items-center gap-2">
+            <i class="fa-solid ${icon} text-teal-600"></i> ${this.escapeHtml(title)}
+            <i class="fa-solid fa-chevron-down ml-auto text-teal-400 text-sm transition-transform group-open:rotate-180"></i>
+          </summary>
+          <div class="p-4">${table}</div>
+        </details>`;
+      },
+
+      renderInfoSections(rootNode) {
+        const el = rootNode.getElementById('info-sections');
+        if (!el) return;
+        let html = '';
+        html += this.renderInfoPanel(this.S('instructions_title', 'คำชี้แจง'), 'fa-circle-info', appState.instructions);
+        html += this.renderInfoPanel(this.S('definitions_title', 'วัตถุประสงค์และนิยาม'), 'fa-book', appState.definitions);
+        el.innerHTML = html;
+      },
+
       // หา URL ของ Web app จาก: พารามิเตอร์ ?gas=... > ค่าใน localStorage > ค่าคงที่ GAS_URL
       resolveGasUrl() {
         const p = new URLSearchParams(location.search).get('gas');
@@ -319,6 +362,8 @@
             appState.evaluations = serverData.evaluations || {};
             appState.toolStatuses = serverData.toolStatuses || {};
             appState.settings = serverData.settings || {};
+            appState.instructions = serverData.instructions || { headers: [], rows: [] };
+            appState.definitions = serverData.definitions || { headers: [], rows: [] };
 
             if (MOCK_EXPERTS.length > 0) {
               appState.currentUser = MOCK_EXPERTS[0];
@@ -530,6 +575,9 @@
         dashNode.getElementById('progress-text').textContent = `${completedTools} / ${totalTools} เครื่องมือ`;
         dashNode.getElementById('progress-bar').style.width = `${progressPercent}%`;
 
+        // แสดงคำชี้แจง และ วัตถุประสงค์และนิยาม (จากชีต)
+        this.renderInfoSections(dashNode);
+
         const phasesContainer = dashNode.getElementById('phases-container');
         
         MOCK_DATA.phases.forEach(phase => {
@@ -545,6 +593,11 @@
             const status = appState.toolStatuses[uid]?.[tool.id] || 'pending';
             
             toolNode.querySelector('.tool-name').textContent = tool.name;
+            const detailEl = toolNode.querySelector('.tool-detail');
+            if (tool.detail && tool.detail.trim() !== '') {
+              detailEl.textContent = tool.detail;
+              detailEl.classList.remove('hidden');
+            }
             toolNode.querySelector('.tool-status').innerHTML = this.getStatusBadgeHTML(status);
             
             const btn = toolNode.querySelector('.action-btn');

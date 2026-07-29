@@ -95,6 +95,24 @@ function getSheetDataAsObjects(sheetName) {
   });
 }
 
+// อ่านชีตแบบตาราง (แถวแรก = หัวตาราง) เอาเฉพาะ numCols คอลัมน์แรก (A, B, C, ...)
+// คืน { headers: [...], rows: [[...], ...] } ข้ามแถวที่ว่างทั้งแถว
+function getSheetGrid(sheetName, numCols) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return { headers: [], rows: [] };
+
+  const values = sheet.getDataRange().getDisplayValues();
+  if (values.length === 0) return { headers: [], rows: [] };
+
+  const take = r => r.slice(0, numCols).map(c => (c === null || c === undefined) ? '' : String(c));
+  const headers = take(values[0]);
+  const rows = values.slice(1)
+    .map(take)
+    .filter(r => r.some(c => c.trim() !== ''));
+  return { headers: headers, rows: rows };
+}
+
 // ==========================================
 // ฟังก์ชันหลักดึงข้อมูลไปแสดงผลบน Web App
 // ==========================================
@@ -144,6 +162,31 @@ function getAppData() {
     });
   });
 
+  // 2.1 ถ้ามีชีต "สรุปรายชุด" ให้ใช้เป็นรายการเครื่องมือหลัก
+  //     คอลัมน์ A = ชุดที่ (ต้องตรงกับ "ชุดที่" ในชีต IOC_รวมทุกชุด เพื่อผูกกับคำถาม)
+  //     คอลัมน์ B = ชื่อเครื่องมือ, C = ระยะ, D = รายละเอียด/หมายเหตุ
+  const summaryGrid = getSheetGrid('สรุปรายชุด', 4);
+  if (summaryGrid.rows.length > 0) {
+    phasesSet = new Set();
+    toolsMap = new Map();
+    summaryGrid.rows.forEach(r => {
+      const id = (r[0] || '').trim();
+      if (!id) return;
+      const name = (r[1] || '').trim();
+      const phase = (r[2] || '').trim();
+      const detail = (r[3] || '').trim();
+      if (phase) phasesSet.add(phase);
+      if (!toolsMap.has(id)) {
+        toolsMap.set(id, {
+          id: id,
+          phaseId: phase || 'อื่นๆ',
+          name: name || id,
+          detail: detail
+        });
+      }
+    });
+  }
+
   const phases = Array.from(phasesSet).map(p => ({ id: p, label: p }));
   const tools = Array.from(toolsMap.values());
 
@@ -184,6 +227,10 @@ function getAppData() {
     if (k) settings[k] = s['Value'];
   });
 
+  // 6. ดึงส่วนคำชี้แจง และ วัตถุประสงค์และนิยาม (แถวแรก = หัวตาราง, คอลัมน์ A B C)
+  const instructions = getSheetGrid('คำชี้แจง', 3);
+  const definitions = getSheetGrid('วัตถุประสงค์และนิยาม', 3);
+
   return {
     experts: experts,
     phases: phases,
@@ -191,7 +238,9 @@ function getAppData() {
     items: items,
     toolStatuses: toolStatuses,
     evaluations: evaluations,
-    settings: settings
+    settings: settings,
+    instructions: instructions,
+    definitions: definitions
   };
 }
 
