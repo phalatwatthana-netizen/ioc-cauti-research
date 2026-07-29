@@ -38,7 +38,7 @@ function setupDatabase() {
   // โครงสร้างชีตที่คุณมีอยู่ (ป้องกันการเผลอลบ จะได้สร้างใหม่ได้)
   const existingSheetsDef = {
     'Experts': ['Expert_ID', 'Full_Name', 'Position', 'Access_Token', 'Status', 'Started_At', 'Submitted_At'],
-    'IOC_รวมทุกชุด': ['ลำดับ', 'ชุดที่', 'เครื่องมือ', 'ระยะ', 'วัตถุประสงค์', 'ตอน/ด้าน', 'ข้อที่', 'ข้อคำถาม / รายการประเมิน']
+    'IOC รวมทุกชุด': ['ลำดับ', 'ชุดที่', 'เครื่องมือ', 'ระยะ', 'วัตถุประสงค์', 'ตอน/ด้าน', 'ข้อที่', 'ข้อคำถาม / รายการประเมิน']
   };
 
   // ชีตระบบที่ต้องใช้เพิ่มสำหรับการทำงานของแอป
@@ -51,12 +51,11 @@ function setupDatabase() {
   const allDefs = { ...existingSheetsDef, ...systemSheetsDef };
 
   for (let sheetName in allDefs) {
-    let sheet = ss.getSheetByName(sheetName);
-    if (!sheet) {
-      sheet = ss.insertSheet(sheetName);
-      sheet.appendRow(allDefs[sheetName]);
-      sheet.getRange(1, 1, 1, allDefs[sheetName].length).setFontWeight("bold").setBackground("#e0f2f1");
-    }
+    // ข้ามถ้ามีแท็บอยู่แล้ว (รวมถึงชื่อที่ต่างกันแค่เว้นวรรค/ขีดล่าง) เพื่อไม่สร้างแท็บเปล่าซ้ำ
+    if (findSheet(sheetName)) continue;
+    let sheet = ss.insertSheet(sheetName);
+    sheet.appendRow(allDefs[sheetName]);
+    sheet.getRange(1, 1, 1, allDefs[sheetName].length).setFontWeight("bold").setBackground("#e0f2f1");
   }
 
   // ใส่ค่าเริ่มต้นให้ชีต Settings หากยังว่าง (ใช้ควบคุมข้อความบนหน้าเว็บแบบไดนามิก)
@@ -76,8 +75,7 @@ function setupDatabase() {
 
 // ฟังก์ชัน Helper เพื่ออ่านข้อมูลในชีตมาเป็น Object Array
 function getSheetDataAsObjects(sheetName) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(sheetName);
+  const sheet = findSheet(sheetName);
   if (!sheet) return [];
 
   const data = sheet.getDataRange().getDisplayValues(); // ใช้ getDisplayValues เผื่อรูปแบบตัวเลข
@@ -95,11 +93,26 @@ function getSheetDataAsObjects(sheetName) {
   });
 }
 
+// หาแท็บชีตแบบยืดหยุ่น: รองรับทั้งชื่อที่มีเว้นวรรคและขีดล่าง (เช่น "IOC รวมทุกชุด" กับ "IOC_รวมทุกชุด")
+// ถ้ามีหลายแท็บที่เข้าเกณฑ์ จะเลือกแท็บที่มีข้อมูลมากที่สุด (กันกรณีมีแท็บเปล่าซ้ำ)
+function findSheet(sheetName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const candidates = [sheetName, sheetName.replace(/_/g, ' '), sheetName.replace(/ /g, '_')];
+  let best = null, bestRows = -1;
+  candidates.forEach(function (n) {
+    const sh = ss.getSheetByName(n);
+    if (sh) {
+      const rows = sh.getLastRow();
+      if (rows > bestRows) { bestRows = rows; best = sh; }
+    }
+  });
+  return best;
+}
+
 // อ่านชีตแบบตาราง (แถวแรก = หัวตาราง) เอาเฉพาะ numCols คอลัมน์แรก (A, B, C, ...)
 // คืน { headers: [...], rows: [[...], ...] } ข้ามแถวที่ว่างทั้งแถว
 function getSheetGrid(sheetName, numCols) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(sheetName);
+  const sheet = findSheet(sheetName);
   if (!sheet) return { headers: [], rows: [] };
 
   const values = sheet.getDataRange().getDisplayValues();
