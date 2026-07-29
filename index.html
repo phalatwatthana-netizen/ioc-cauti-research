@@ -163,6 +163,15 @@
   <!-- Template: Evaluation Form -->
   <template id="tpl-evaluation-form">
     <div class="space-y-6 pb-24 animate-fade-in">
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <button onclick="app.setView('dashboard')" class="px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
+          <i class="fa-solid fa-house"></i> กลับหน้าหลัก
+        </button>
+        <button id="btn-next-tool" onclick="app.goNextTool()" class="px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-700 text-white hover:from-teal-700 hover:to-cyan-800 transition-colors shadow-sm">
+          แบบประเมินถัดไป <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
       <div class="bg-white rounded-xl shadow-sm border border-teal-100 p-5 flex items-start gap-4 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-2 h-full bg-cyan-500"></div>
         <button onclick="app.setView('dashboard')" class="mt-1 text-slate-400 hover:text-teal-600 transition-colors">
@@ -516,6 +525,18 @@
       openEvaluation(toolId) {
         appState.selectedTool = MOCK_DATA.tools.find(t => t.id === toolId);
         this.setView('evaluate');
+      },
+
+      // ไปยังแบบประเมิน (เครื่องมือ) ชุดถัดไปตามลำดับ ถ้าถึงชุดสุดท้ายให้กลับหน้าหลัก
+      goNextTool() {
+        const tools = MOCK_DATA.tools || [];
+        const idx = tools.findIndex(t => t.id === appState.selectedTool.id);
+        if (idx > -1 && idx < tools.length - 1) {
+          this.openEvaluation(tools[idx + 1].id);
+        } else {
+          this.showToast('success', 'นี่เป็นแบบประเมินชุดสุดท้ายแล้ว');
+          this.setView('dashboard');
+        }
       },
 
       setAdminTab(tabName) {
