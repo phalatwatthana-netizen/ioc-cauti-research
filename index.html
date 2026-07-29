@@ -23,7 +23,9 @@
 
     body {
       font-family: 'Sarabun', sans-serif;
-      background-color: #f8fafc; /* slate-50 */
+      background: linear-gradient(160deg, #f8fafc 0%, #ecfeff 100%); /* slate-50 -> cyan-50 */
+      background-attachment: fixed;
+      min-height: 100vh;
       color: #1e293b; /* slate-800 */
     }
     
@@ -73,9 +75,9 @@
     .score-btn[data-c="amber"]:hover { background: #fffbeb; }
     .score-btn[data-c="rose"]:hover  { background: #fff1f2; }
     .score-btn.selected { transform: translateY(-2px); }
-    .score-btn.selected[data-c="green"] { background: #16a34a; border-color: #16a34a; color: #fff; box-shadow: 0 4px 6px -1px rgba(22,163,74,.3), 0 0 0 3px #bbf7d0; }
-    .score-btn.selected[data-c="amber"] { background: #f59e0b; border-color: #f59e0b; color: #fff; box-shadow: 0 4px 6px -1px rgba(245,158,11,.3), 0 0 0 3px #fde68a; }
-    .score-btn.selected[data-c="rose"]  { background: #e11d48; border-color: #e11d48; color: #fff; box-shadow: 0 4px 6px -1px rgba(225,29,72,.3), 0 0 0 3px #fecdd3; }
+    .score-btn.selected[data-c="green"] { background: linear-gradient(135deg, #22c55e, #15803d); border-color: #16a34a; color: #fff; box-shadow: 0 4px 6px -1px rgba(22,163,74,.3), 0 0 0 3px #bbf7d0; }
+    .score-btn.selected[data-c="amber"] { background: linear-gradient(135deg, #fbbf24, #b45309); border-color: #f59e0b; color: #fff; box-shadow: 0 4px 6px -1px rgba(245,158,11,.3), 0 0 0 3px #fde68a; }
+    .score-btn.selected[data-c="rose"]  { background: linear-gradient(135deg, #fb7185, #be123c); border-color: #e11d48; color: #fff; box-shadow: 0 4px 6px -1px rgba(225,29,72,.3), 0 0 0 3px #fecdd3; }
   </style>
 </head>
 <body>
@@ -139,7 +141,7 @@
   <!-- Template: Phase Group -->
   <template id="tpl-phase-group">
     <div class="bg-white rounded-xl shadow-sm border-t-4 border-cyan-500 overflow-hidden">
-      <div class="bg-teal-700 px-5 py-3">
+      <div class="bg-gradient-to-r from-teal-600 to-cyan-700 px-5 py-3">
         <h3 class="font-bold text-white phase-title">Phase Title</h3>
       </div>
       <div class="divide-y divide-gray-100 tools-list"></div>
@@ -154,7 +156,7 @@
         <p class="text-sm text-slate-500 mb-2 tool-detail hidden"></p>
         <div class="tool-status"></div>
       </div>
-      <button class="whitespace-nowrap px-4 py-2 bg-white border border-teal-500 text-teal-600 rounded-lg hover:bg-teal-50 transition-colors font-medium text-sm flex items-center justify-center gap-1 shadow-sm action-btn"></button>
+      <button class="whitespace-nowrap px-4 py-2 bg-white border border-teal-500 text-teal-600 rounded-lg hover:bg-gradient-to-r from-teal-50 to-cyan-50 transition-colors font-medium text-sm flex items-center justify-center gap-1 shadow-sm action-btn"></button>
     </div>
   </template>
 
@@ -175,7 +177,7 @@
 
       <div id="eval-objective"></div>
 
-      <div class="bg-teal-50 border border-teal-100 rounded-lg p-4 text-sm text-teal-900 flex flex-wrap gap-4 sm:gap-8 justify-center">
+      <div class="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-100 rounded-lg p-4 text-sm text-teal-900 flex flex-wrap gap-4 sm:gap-8 justify-center">
         <span class="font-bold">เกณฑ์การประเมิน:</span>
         <span class="flex items-center gap-2"><div class="w-4 h-4 bg-green-500 rounded-full"></div> +1 สอดคล้อง/เหมาะสม</span>
         <span class="flex items-center gap-2"><div class="w-4 h-4 bg-yellow-400 rounded-full"></div> 0 ไม่แน่ใจ</span>
@@ -186,7 +188,7 @@
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-teal-700 text-white border-b border-gray-200">
+              <tr class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white border-b border-gray-200">
                 <th class="p-4 w-12 text-center font-bold">ข้อ</th>
                 <th class="p-4 min-w-[300px] font-bold">รายการประเมิน</th>
                 <th class="p-4 w-64 text-center font-bold">การให้คะแนน</th>
@@ -383,7 +385,7 @@
         const table = this.renderGroupedList(grid);
         if (!table) return '';
         return `<details class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group" open>
-          <summary class="cursor-pointer select-none px-5 py-3 font-bold text-white bg-teal-700 flex items-center gap-2">
+          <summary class="cursor-pointer select-none px-5 py-3 font-bold text-white bg-gradient-to-r from-teal-600 to-cyan-700 flex items-center gap-2">
             <i class="fa-solid ${icon} text-teal-200"></i> ${this.escapeHtml(title)}
             <i class="fa-solid fa-chevron-down ml-auto text-teal-200 text-sm transition-transform group-open:rotate-180"></i>
           </summary>
@@ -691,7 +693,7 @@
             const btn = toolNode.querySelector('.action-btn');
             const btnBase = 'action-btn whitespace-nowrap px-5 py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm';
             if (status === 'submitted') {
-              btn.className = btnBase + ' bg-white border border-teal-500 text-teal-600 hover:bg-teal-50';
+              btn.className = btnBase + ' bg-white border border-teal-500 text-teal-600 hover:bg-gradient-to-r from-teal-50 to-cyan-50';
               btn.innerHTML = `<i class="fa-solid fa-pen"></i> แก้ไขการประเมิน`;
             } else if (status === 'draft') {
               btn.className = btnBase + ' bg-yellow-100 border border-yellow-300 text-yellow-800 hover:bg-yellow-200';
@@ -741,7 +743,7 @@
           const list = glossary.map(r =>
             `<div class="mb-2 last:mb-0"><span class="font-semibold text-slate-700">${esc(r[1] || '')}</span>${r[2] ? ` <span class="text-slate-400">—</span> <span class="text-slate-600">${esc(r[2])}</span>` : ''}</div>`).join('');
           html += `<details class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-3 group">
-            <summary class="cursor-pointer select-none px-4 py-2.5 font-bold text-white bg-teal-700 flex items-center gap-2">
+            <summary class="cursor-pointer select-none px-4 py-2.5 font-bold text-white bg-gradient-to-r from-teal-600 to-cyan-700 flex items-center gap-2">
               <i class="fa-solid fa-book text-teal-200"></i> นิยามศัพท์เฉพาะ (กดเพื่อดู)
               <i class="fa-solid fa-chevron-down ml-auto text-teal-200 text-sm transition-transform group-open:rotate-180"></i>
             </summary>
@@ -782,7 +784,7 @@
           if (item.part && item.part !== '-' && item.part !== lastPart) {
             lastPart = item.part;
             const sectionTr = document.createElement('tr');
-            sectionTr.innerHTML = `<td colspan="4" class="px-4 py-2 bg-teal-50 text-teal-800 font-bold text-sm border-y border-teal-100">${this.escapeHtml(item.part)}</td>`;
+            sectionTr.innerHTML = `<td colspan="4" class="px-4 py-2 bg-gradient-to-r from-teal-50 to-cyan-50 text-teal-800 font-bold text-sm border-y border-teal-100">${this.escapeHtml(item.part)}</td>`;
             tbody.appendChild(sectionTr);
           }
 
@@ -906,7 +908,7 @@
 
             html += `
               <div class="border border-cyan-200 rounded-xl overflow-hidden">
-                <div class="bg-teal-700 px-5 py-3 flex justify-between items-center">
+                <div class="bg-gradient-to-r from-teal-600 to-cyan-700 px-5 py-3 flex justify-between items-center">
                   <div>
                     <div class="text-xs font-bold text-teal-200 mb-1">${phase ? phase.label : ''}</div>
                     <h4 class="font-bold text-white text-lg">${tool.name}</h4>
@@ -915,7 +917,7 @@
                 <div class="overflow-x-auto">
                   <table class="w-full text-left border-collapse min-w-[800px]">
                     <thead>
-                      <tr class="bg-teal-700 text-white border-b border-gray-200 text-sm">
+                      <tr class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white border-b border-gray-200 text-sm">
                         <th class="p-3 w-10 text-center font-bold">ข้อ</th>
                         <th class="p-3 font-bold">รายการประเมิน</th>
                         <th class="p-3 w-12 text-center text-green-300 font-bold">+1</th>
