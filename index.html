@@ -336,9 +336,9 @@
         const table = this.renderGroupedList(grid);
         if (!table) return '';
         return `<details class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group" open>
-          <summary class="cursor-pointer select-none px-5 py-3 font-bold text-teal-800 bg-teal-50 border-b border-teal-100 flex items-center gap-2">
-            <i class="fa-solid ${icon} text-teal-600"></i> ${this.escapeHtml(title)}
-            <i class="fa-solid fa-chevron-down ml-auto text-teal-400 text-sm transition-transform group-open:rotate-180"></i>
+          <summary class="cursor-pointer select-none px-5 py-3 font-bold text-white bg-teal-700 flex items-center gap-2">
+            <i class="fa-solid ${icon} text-teal-200"></i> ${this.escapeHtml(title)}
+            <i class="fa-solid fa-chevron-down ml-auto text-teal-200 text-sm transition-transform group-open:rotate-180"></i>
           </summary>
           <div class="p-4">${table}</div>
         </details>`;
