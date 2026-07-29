@@ -702,8 +702,17 @@
         formNode.getElementById('eval-status-container').innerHTML = statusHtml;
 
         const tbody = formNode.getElementById('eval-items-tbody');
-        
+
+        let lastPart = null;
         items.forEach((item, index) => {
+          // แถวหัวข้อคั่นกลุ่มตาม "ตอน/ด้าน" เมื่อค่าเปลี่ยน
+          if (item.part && item.part !== '-' && item.part !== lastPart) {
+            lastPart = item.part;
+            const sectionTr = document.createElement('tr');
+            sectionTr.innerHTML = `<td colspan="6" class="px-4 py-2 bg-teal-50 text-teal-800 font-bold text-sm border-y border-teal-100">${this.escapeHtml(item.part)}</td>`;
+            tbody.appendChild(sectionTr);
+          }
+
           const key = `${uid}_${tool.id}_${item.id}`;
           const evalData = appState.evaluations[key] || {};
           const score = evalData.score;
@@ -715,7 +724,7 @@
             <td class="p-4 text-center font-medium text-slate-500">${index + 1}</td>
             <td class="p-4 text-slate-800">
                <div>${item.text}</div>
-               ${item.objective !== '-' ? `<div class="text-xs text-slate-400 mt-1">อ้างอิง: ${item.objective}</div>` : ''}
+               ${item.objective && item.objective !== '-' ? `<div class="text-xs text-slate-400 mt-1">${item.objective}</div>` : ''}
             </td>
             <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="1" class="w-5 h-5 text-teal-600 focus:ring-teal-500 accent-teal-600 cursor-pointer" ${score === 1 ? 'checked' : ''}></td>
             <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="0" class="w-5 h-5 text-yellow-500 focus:ring-yellow-400 accent-yellow-500 cursor-pointer" ${score === 0 ? 'checked' : ''}></td>
