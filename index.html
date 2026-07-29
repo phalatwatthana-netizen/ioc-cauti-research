@@ -1,754 +1,788 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบประเมินเครื่องมือวิจัย (IOC)</title>
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Google Fonts: Sarabun -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบประเมินเครื่องมือวิจัย (IOC)</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Sarabun -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <style>
-    body {
-      font-family: 'Sarabun', sans-serif;
-      background-color: #f8fafc; /* slate-50 */
-      color: #1e293b; /* slate-800 */
-    }
-    
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background-color: #f8fafc; /* slate-50 */
+      color: #1e293b; /* slate-800 */
+    }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-    /* Loading Spinner */
-    .loader {
-      border: 4px solid #f3f3f3;
-      border-radius: 50%;
-      border-top: 4px solid #06b6d4; /* cyan-500 */
-      width: 40px;
-      height: 40px;
-      -webkit-animation: spin 1s linear infinite; /* Safari */
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    /* Animations */
-    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+    /* Loading Spinner */
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 4px solid #06b6d4; /* cyan-500 */
+      width: 40px;
+      height: 40px;
+      -webkit-animation: spin 1s linear infinite; /* Safari */
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Animations */
+    .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
 
-  <nav class="bg-gradient-to-r from-teal-600 to-cyan-700 shadow-md text-white sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <i class="fa-regular fa-circle-check text-cyan-200 text-2xl"></i>
-        <h1 class="font-bold text-xl tracking-wide hidden sm:block">ระบบประเมินเครื่องมือวิจัย (IOC)</h1>
-        <h1 class="font-bold text-xl tracking-wide sm:hidden">IOC System</h1>
-      </div>
-      
-      <div class="flex items-center gap-4">
-        <div class="text-sm bg-white/10 rounded-full px-4 py-1.5 flex items-center gap-2">
-          <i class="fa-solid fa-users"></i>
-          <select 
-            id="role-selector"
-            class="bg-transparent border-none text-white font-bold outline-none cursor-pointer appearance-none"
-            onchange="app.switchRole(this.value)"
-          >
-            <option value="" disabled selected>-- กำลังโหลดผู้ใช้งาน --</option>
-            <optgroup label="มุมมองผู้ทรงคุณวุฒิ" id="expert-options" class="text-slate-800"></optgroup>
-            <optgroup label="มุมมองผู้ดูแลระบบ" class="text-slate-800">
-              <option value="admin">ผู้ดูแลระบบ (Admin Dashboard)</option>
-            </optgroup>
-          </select>
-        </div>
-      </div>
-    </div>
-  </nav>
+  <nav class="bg-gradient-to-r from-teal-600 to-cyan-700 shadow-md text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <i class="fa-regular fa-circle-check text-cyan-200 text-2xl"></i>
+        <h1 class="font-bold text-xl tracking-wide hidden sm:block">ระบบประเมินเครื่องมือวิจัย (IOC)</h1>
+        <h1 class="font-bold text-xl tracking-wide sm:hidden">IOC System</h1>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <div class="text-sm bg-white/10 rounded-full px-4 py-1.5 flex items-center gap-2">
+          <i class="fa-solid fa-users"></i>
+          <select 
+            id="role-selector"
+            class="bg-transparent border-none text-white font-bold outline-none cursor-pointer appearance-none"
+            onchange="app.switchRole(this.value)"
+          >
+            <option value="" disabled selected>-- กำลังโหลดผู้ใช้งาน --</option>
+            <optgroup label="มุมมองผู้ทรงคุณวุฒิ" id="expert-options" class="text-slate-800"></optgroup>
+            <optgroup label="มุมมองผู้ดูแลระบบ" class="text-slate-800">
+              <option value="admin">ผู้ดูแลระบบ (Admin Dashboard)</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+    </div>
+  </nav>
 
-  <main class="max-w-7xl mx-auto p-4 py-8" id="app-container">
-    <!-- View content will be injected here -->
-  </main>
+  <main class="max-w-7xl mx-auto p-4 py-8" id="app-container">
+    <!-- View content will be injected here -->
+  </main>
 
-  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
 
-  <!-- Template: Expert Dashboard -->
-  <template id="tpl-expert-dashboard">
-    <div class="space-y-6 animate-fade-in">
-      <div class="bg-white rounded-xl shadow-sm border border-teal-100 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div>
-          <h2 class="text-2xl font-bold text-teal-900" id="welcome-name">ยินดีต้อนรับ</h2>
-          <p class="text-teal-600">กรุณาเลือกเครื่องมือวิจัยด้านล่างเพื่อทำการประเมิน IOC</p>
-        </div>
-        <div class="w-full md:w-1/3">
-          <div class="flex justify-between text-sm mb-1 text-teal-800 font-medium">
-            <span>ความคืบหน้าการประเมิน</span>
-            <span id="progress-text">0 / 0 เครื่องมือ</span>
-          </div>
-          <div class="w-full bg-slate-100 rounded-full h-3">
-            <div id="progress-bar" class="bg-gradient-to-r from-teal-400 to-cyan-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
-          </div>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="phases-container"></div>
-    </div>
-  </template>
+  <!-- Template: Expert Dashboard -->
+  <template id="tpl-expert-dashboard">
+    <div class="space-y-6 animate-fade-in">
+      <div class="bg-white rounded-xl shadow-sm border border-teal-100 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-teal-900" id="welcome-name">ยินดีต้อนรับ</h2>
+          <p class="text-teal-600">กรุณาเลือกเครื่องมือวิจัยด้านล่างเพื่อทำการประเมิน IOC</p>
+        </div>
+        <div class="w-full md:w-1/3">
+          <div class="flex justify-between text-sm mb-1 text-teal-800 font-medium">
+            <span>ความคืบหน้าการประเมิน</span>
+            <span id="progress-text">0 / 0 เครื่องมือ</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-3">
+            <div id="progress-bar" class="bg-gradient-to-r from-teal-400 to-cyan-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="phases-container"></div>
+    </div>
+  </template>
 
-  <!-- Template: Phase Group -->
-  <template id="tpl-phase-group">
-    <div class="bg-white rounded-xl shadow-sm border-t-4 border-cyan-500 overflow-hidden">
-      <div class="bg-cyan-50 px-5 py-3 border-b border-cyan-100">
-        <h3 class="font-bold text-cyan-900 phase-title">Phase Title</h3>
-      </div>
-      <div class="divide-y divide-gray-100 tools-list"></div>
-    </div>
-  </template>
+  <!-- Template: Phase Group -->
+  <template id="tpl-phase-group">
+    <div class="bg-white rounded-xl shadow-sm border-t-4 border-cyan-500 overflow-hidden">
+      <div class="bg-cyan-50 px-5 py-3 border-b border-cyan-100">
+        <h3 class="font-bold text-cyan-900 phase-title">Phase Title</h3>
+      </div>
+      <div class="divide-y divide-gray-100 tools-list"></div>
+    </div>
+  </template>
 
-  <!-- Template: Tool Item -->
-  <template id="tpl-tool-item">
-    <div class="p-5 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer tool-row">
-      <div class="flex-1">
-        <h4 class="text-slate-800 font-medium text-lg leading-tight mb-2 tool-name">Tool Name</h4>
-        <div class="tool-status"></div>
-      </div>
-      <button class="whitespace-nowrap px-4 py-2 bg-white border border-teal-500 text-teal-600 rounded-lg hover:bg-teal-50 transition-colors font-medium text-sm flex items-center justify-center gap-1 shadow-sm action-btn"></button>
-    </div>
-  </template>
+  <!-- Template: Tool Item -->
+  <template id="tpl-tool-item">
+    <div class="p-5 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer tool-row">
+      <div class="flex-1">
+        <h4 class="text-slate-800 font-medium text-lg leading-tight mb-2 tool-name">Tool Name</h4>
+        <div class="tool-status"></div>
+      </div>
+      <button class="whitespace-nowrap px-4 py-2 bg-white border border-teal-500 text-teal-600 rounded-lg hover:bg-teal-50 transition-colors font-medium text-sm flex items-center justify-center gap-1 shadow-sm action-btn"></button>
+    </div>
+  </template>
 
-  <!-- Template: Evaluation Form -->
-  <template id="tpl-evaluation-form">
-    <div class="space-y-6 pb-24 animate-fade-in">
-      <div class="bg-white rounded-xl shadow-sm border border-teal-100 p-5 flex items-start gap-4 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-2 h-full bg-cyan-500"></div>
-        <button onclick="app.setView('dashboard')" class="mt-1 text-slate-400 hover:text-teal-600 transition-colors">
-          <i class="fa-solid fa-arrow-left text-xl"></i>
-        </button>
-        <div>
-          <div class="text-sm text-cyan-600 font-bold mb-1" id="eval-phase-label">Phase Label</div>
-          <h2 class="text-2xl font-bold text-slate-800 mb-2" id="eval-tool-name">Tool Name</h2>
-          <div class="flex items-center gap-3" id="eval-status-container"></div>
-        </div>
-      </div>
+  <!-- Template: Evaluation Form -->
+  <template id="tpl-evaluation-form">
+    <div class="space-y-6 pb-24 animate-fade-in">
+      <div class="bg-white rounded-xl shadow-sm border border-teal-100 p-5 flex items-start gap-4 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-2 h-full bg-cyan-500"></div>
+        <button onclick="app.setView('dashboard')" class="mt-1 text-slate-400 hover:text-teal-600 transition-colors">
+          <i class="fa-solid fa-arrow-left text-xl"></i>
+        </button>
+        <div>
+          <div class="text-sm text-cyan-600 font-bold mb-1" id="eval-phase-label">Phase Label</div>
+          <h2 class="text-2xl font-bold text-slate-800 mb-2" id="eval-tool-name">Tool Name</h2>
+          <div class="flex items-center gap-3" id="eval-status-container"></div>
+        </div>
+      </div>
 
-      <div class="bg-teal-50 border border-teal-100 rounded-lg p-4 text-sm text-teal-900 flex flex-wrap gap-4 sm:gap-8 justify-center">
-        <span class="font-bold">เกณฑ์การประเมิน:</span>
-        <span class="flex items-center gap-2"><div class="w-4 h-4 bg-green-500 rounded-full"></div> +1 สอดคล้อง/เหมาะสม</span>
-        <span class="flex items-center gap-2"><div class="w-4 h-4 bg-yellow-400 rounded-full"></div> 0 ไม่แน่ใจ</span>
-        <span class="flex items-center gap-2"><div class="w-4 h-4 bg-red-500 rounded-full"></div> -1 ไม่สอดคล้อง/ไม่เหมาะสม</span>
-      </div>
+      <div class="bg-teal-50 border border-teal-100 rounded-lg p-4 text-sm text-teal-900 flex flex-wrap gap-4 sm:gap-8 justify-center">
+        <span class="font-bold">เกณฑ์การประเมิน:</span>
+        <span class="flex items-center gap-2"><div class="w-4 h-4 bg-green-500 rounded-full"></div> +1 สอดคล้อง/เหมาะสม</span>
+        <span class="flex items-center gap-2"><div class="w-4 h-4 bg-yellow-400 rounded-full"></div> 0 ไม่แน่ใจ</span>
+        <span class="flex items-center gap-2"><div class="w-4 h-4 bg-red-500 rounded-full"></div> -1 ไม่สอดคล้อง/ไม่เหมาะสม</span>
+      </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-slate-50 text-slate-700 border-b border-gray-200">
-                <th class="p-4 w-12 text-center font-bold">ข้อ</th>
-                <th class="p-4 min-w-[300px] font-bold">รายการประเมิน</th>
-                <th class="p-4 w-20 text-center font-bold">+1</th>
-                <th class="p-4 w-20 text-center font-bold">0</th>
-                <th class="p-4 w-20 text-center font-bold">-1</th>
-                <th class="p-4 min-w-[200px] font-bold">ข้อเสนอแนะเพื่อการปรับปรุง</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200" id="eval-items-tbody"></tbody>
-          </table>
-        </div>
-      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-700 border-b border-gray-200">
+                <th class="p-4 w-12 text-center font-bold">ข้อ</th>
+                <th class="p-4 min-w-[300px] font-bold">รายการประเมิน</th>
+                <th class="p-4 w-20 text-center font-bold">+1</th>
+                <th class="p-4 w-20 text-center font-bold">0</th>
+                <th class="p-4 w-20 text-center font-bold">-1</th>
+                <th class="p-4 min-w-[200px] font-bold">ข้อเสนอแนะเพื่อการปรับปรุง</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="eval-items-tbody"></tbody>
+          </table>
+        </div>
+      </div>
 
-      <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
-        <div class="max-w-7xl mx-auto flex justify-between items-center px-4">
-          <div class="text-sm text-slate-500 hidden sm:block">
-            สถานะจะบันทึกในนาม: <span class="font-bold text-slate-700" id="eval-current-user-name">User Name</span>
-          </div>
-          <div class="flex gap-3 w-full sm:w-auto">
-            <button onclick="app.saveDraft(event)" class="flex-1 sm:flex-none px-6 py-2.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg hover:bg-yellow-200 transition-colors flex items-center justify-center gap-2">
-              <i class="fa-solid fa-floppy-disk"></i> บันทึกร่าง
-            </button>
-            <button onclick="app.submitEvaluation(event)" class="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold rounded-lg hover:from-teal-600 hover:to-cyan-700 transition-colors shadow-md flex items-center justify-center gap-2">
-              <i class="fa-solid fa-paper-plane"></i> <span id="btn-submit-text">ส่งผลการประเมิน</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
+      <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40">
+        <div class="max-w-7xl mx-auto flex justify-between items-center px-4">
+          <div class="text-sm text-slate-500 hidden sm:block">
+            สถานะจะบันทึกในนาม: <span class="font-bold text-slate-700" id="eval-current-user-name">User Name</span>
+          </div>
+          <div class="flex gap-3 w-full sm:w-auto">
+            <button onclick="app.saveDraft(event)" class="flex-1 sm:flex-none px-6 py-2.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg hover:bg-yellow-200 transition-colors flex items-center justify-center gap-2">
+              <i class="fa-solid fa-floppy-disk"></i> บันทึกร่าง
+            </button>
+            <button onclick="app.submitEvaluation(event)" class="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold rounded-lg hover:from-teal-600 hover:to-cyan-700 transition-colors shadow-md flex items-center justify-center gap-2">
+              <i class="fa-solid fa-paper-plane"></i> <span id="btn-submit-text">ส่งผลการประเมิน</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
 
-  <!-- Template: Admin Dashboard -->
-  <template id="tpl-admin-dashboard">
-    <div class="space-y-6 animate-fade-in">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-cyan-500">
-          <div class="text-slate-500 text-sm mb-1">ความคืบหน้ารวม</div>
-          <div class="text-3xl font-bold text-slate-800" id="stat-percent">0%</div>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-teal-500">
-          <div class="text-slate-500 text-sm mb-1">ผู้ทรงคุณวุฒิทั้งหมด</div>
-          <div class="text-3xl font-bold text-slate-800" id="stat-experts">0 ท่าน</div>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
-          <div class="text-slate-500 text-sm mb-1">เครื่องมือทั้งหมด</div>
-          <div class="text-3xl font-bold text-slate-800" id="stat-tools">0 ชุด</div>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
-          <div class="text-slate-500 text-sm mb-1">ประเมินแล้วเสร็จ</div>
-          <div class="text-3xl font-bold text-slate-800" id="stat-done">0 / 0</div>
-        </div>
-      </div>
+  <!-- Template: Admin Dashboard -->
+  <template id="tpl-admin-dashboard">
+    <div class="space-y-6 animate-fade-in">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-cyan-500">
+          <div class="text-slate-500 text-sm mb-1">ความคืบหน้ารวม</div>
+          <div class="text-3xl font-bold text-slate-800" id="stat-percent">0%</div>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-teal-500">
+          <div class="text-slate-500 text-sm mb-1">ผู้ทรงคุณวุฒิทั้งหมด</div>
+          <div class="text-3xl font-bold text-slate-800" id="stat-experts">0 ท่าน</div>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+          <div class="text-slate-500 text-sm mb-1">เครื่องมือทั้งหมด</div>
+          <div class="text-3xl font-bold text-slate-800" id="stat-tools">0 ชุด</div>
+        </div>
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
+          <div class="text-slate-500 text-sm mb-1">ประเมินแล้วเสร็จ</div>
+          <div class="text-3xl font-bold text-slate-800" id="stat-done">0 / 0</div>
+        </div>
+      </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="flex overflow-x-auto border-b border-gray-200" id="admin-tabs">
-          <button onclick="app.setAdminTab('overview')" id="tab-overview" class="flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50">
-            <i class="fa-solid fa-chart-pie"></i> สรุปภาพรวม (รายกลุ่ม)
-          </button>
-          <button onclick="app.setAdminTab('items')" id="tab-items" class="flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50">
-            <i class="fa-solid fa-file-lines"></i> ชีตรวมการประเมิน (IOC รายข้อ)
-          </button>
-          <button onclick="app.setAdminTab('experts')" id="tab-experts" class="flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50">
-            <i class="fa-solid fa-users"></i> ความคืบหน้ารายผู้ทรงฯ
-          </button>
-        </div>
-        <div class="p-6" id="admin-tab-content"></div>
-      </div>
-    </div>
-  </template>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="flex overflow-x-auto border-b border-gray-200" id="admin-tabs">
+          <button onclick="app.setAdminTab('overview')" id="tab-overview" class="flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50">
+            <i class="fa-solid fa-chart-pie"></i> สรุปภาพรวม (รายกลุ่ม)
+          </button>
+          <button onclick="app.setAdminTab('items')" id="tab-items" class="flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50">
+            <i class="fa-solid fa-file-lines"></i> ชีตรวมการประเมิน (IOC รายข้อ)
+          </button>
+          <button onclick="app.setAdminTab('experts')" id="tab-experts" class="flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50">
+            <i class="fa-solid fa-users"></i> ความคืบหน้ารายผู้ทรงฯ
+          </button>
+        </div>
+        <div class="p-6" id="admin-tab-content"></div>
+      </div>
+    </div>
+  </template>
 
-  <script>
-    // --- STATE SETTINGS ---
-    let MOCK_EXPERTS = [];
-    let MOCK_DATA = { phases: [], tools: [], items: [] };
+  <script>
+    // --- STATE SETTINGS ---
+    // URL ของ Web app (Apps Script) — วางลิงก์ที่ลงท้ายด้วย /exec ระหว่างเครื่องหมายคำพูด
+    // เช่น: const GAS_URL = "https://script.google.com/macros/s/AKfyc.../exec";
+    // ถ้าเว้นว่างไว้ หน้าเว็บจะถามให้กรอกลิงก์ครั้งแรก แล้วจำไว้ในเครื่อง (localStorage)
+    const GAS_URL = "";
 
-    const appState = {
-      currentUser: null,
-      isAdmin: false,
-      view: 'dashboard', 
-      selectedTool: null,
-      adminTab: 'overview',
-      evaluations: {}, 
-      toolStatuses: {},
-    };
+    let MOCK_EXPERTS = [];
+    let MOCK_DATA = { phases: [], tools: [], items: [] };
 
-    const app = {
-      init() {
-        document.getElementById('app-container').innerHTML = '<div class="flex justify-center items-center h-64 flex-col gap-4"><div class="loader"></div><div class="text-teal-600 font-bold text-lg animate-pulse">กำลังโหลดข้อมูลจาก Google Sheets...</div></div>';
-        
-        // Call Google Apps Script function
-        if (typeof google !== 'undefined') {
-          google.script.run
-            .withSuccessHandler((serverData) => {
-              MOCK_EXPERTS = serverData.experts;
-              MOCK_DATA.phases = serverData.phases;
-              MOCK_DATA.tools = serverData.tools;
-              MOCK_DATA.items = serverData.items;
-              appState.evaluations = serverData.evaluations || {};
-              appState.toolStatuses = serverData.toolStatuses || {};
-              
-              if(MOCK_EXPERTS.length > 0) {
-                appState.currentUser = MOCK_EXPERTS[0];
-              }
-              
-              this.populateRoleSelector();
-              this.render();
-            })
-            .withFailureHandler((error) => {
-              document.getElementById('app-container').innerHTML = `<div class="text-red-500 p-8 text-center bg-red-50 rounded-xl border border-red-200"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i><br>ไม่สามารถโหลดข้อมูลได้: ${error.message}</div>`;
-            })
-            .getAppData();
-        } else {
-           document.getElementById('app-container').innerHTML = `<div class="text-orange-500 p-8 text-center bg-orange-50 rounded-xl">ไม่พบสภาพแวดล้อม Google Apps Script กรุณารันผ่านการ Deploy ของ GAS</div>`;
-        }
-      },
+    const appState = {
+      currentUser: null,
+      isAdmin: false,
+      view: 'dashboard', 
+      selectedTool: null,
+      adminTab: 'overview',
+      evaluations: {}, 
+      toolStatuses: {},
+    };
 
-      getTemplate(id) { return document.getElementById(id).content.cloneNode(true); },
-      clearContainer(id) { document.getElementById(id).innerHTML = ''; },
+    const app = {
+      // หา URL ของ Web app จาก: พารามิเตอร์ ?gas=... > ค่าใน localStorage > ค่าคงที่ GAS_URL
+      resolveGasUrl() {
+        const p = new URLSearchParams(location.search).get('gas');
+        if (p) localStorage.setItem('IOC_GAS_URL', p.trim());
+        return (GAS_URL && GAS_URL.trim()) || localStorage.getItem('IOC_GAS_URL') || '';
+      },
 
-      showToast(type, message) {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        const bg = type === 'error' ? 'bg-red-500' : 'bg-teal-600';
-        const icon = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
-        
-        toast.className = `${bg} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 transform transition-all duration-300 translate-y-full opacity-0`;
-        toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span class="font-medium">${message}</span>`;
-        container.appendChild(toast);
-        
-        setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
-        setTimeout(() => {
-          toast.classList.add('opacity-0');
-          setTimeout(() => toast.remove(), 300);
-        }, 3000);
-      },
+      // หน้าจอกรอกลิงก์ Web app (แสดงเมื่อยังไม่ได้ตั้งค่า URL)
+      renderConfigScreen(msg) {
+        document.getElementById('app-container').innerHTML = `
+          <div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-200 animate-fade-in">
+            <div class="text-lg font-bold text-slate-800 mb-2"><i class="fa-solid fa-link text-teal-600"></i> เชื่อมต่อ Google Apps Script</div>
+            <p class="text-sm text-slate-500 mb-4">วางลิงก์ Web app URL (ลงท้ายด้วย <code>/exec</code>) ที่ได้จากการ Deploy บน Apps Script</p>
+            ${msg ? `<div class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 mb-3">${msg}</div>` : ''}
+            <input id="gas-url-input" type="text" placeholder="https://script.google.com/macros/s/.../exec"
+              class="w-full border border-gray-300 rounded-lg px-4 py-2.5 mb-4 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+            <button onclick="app.saveGasUrl()" class="w-full px-6 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 text-white font-bold rounded-lg hover:from-teal-600 hover:to-cyan-700 transition-colors shadow-md">
+              <i class="fa-solid fa-plug"></i> เชื่อมต่อ
+            </button>
+          </div>`;
+      },
 
-      getStatusBadgeHTML(status) {
-        if (status === 'submitted') return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-500"><i class="fa-solid fa-circle-check"></i> ประเมินแล้ว</span>`;
-        if (status === 'draft') return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-500"><i class="fa-solid fa-clock"></i> บันทึกร่าง</span>`;
-        return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-500"><i class="fa-solid fa-circle-exclamation"></i> ยังไม่ประเมิน</span>`;
-      },
+      saveGasUrl() {
+        const v = document.getElementById('gas-url-input').value.trim();
+        if (!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec/.test(v)) {
+          this.renderConfigScreen('ลิงก์ไม่ถูกต้อง ต้องขึ้นต้นด้วย https://script.google.com/macros/s/ และลงท้ายด้วย /exec');
+          return;
+        }
+        localStorage.setItem('IOC_GAS_URL', v);
+        this.init();
+      },
 
-      switchRole(value) {
-        if (value === 'admin') {
-          appState.isAdmin = true;
-        } else {
-          appState.isAdmin = false;
-          appState.currentUser = MOCK_EXPERTS.find(exp => exp.id === value);
-          appState.view = 'dashboard';
-        }
-        this.render();
-      },
+      init() {
+        this.gasUrl = this.resolveGasUrl();
+        if (!this.gasUrl) { this.renderConfigScreen(); return; }
 
-      setView(viewName) {
-        appState.view = viewName;
-        window.scrollTo(0, 0);
-        this.render();
-      },
+        document.getElementById('app-container').innerHTML = '<div class="flex justify-center items-center h-64 flex-col gap-4"><div class="loader"></div><div class="text-teal-600 font-bold text-lg animate-pulse">กำลังโหลดข้อมูลจาก Google Sheets...</div></div>';
 
-      openEvaluation(toolId) {
-        appState.selectedTool = MOCK_DATA.tools.find(t => t.id === toolId);
-        this.setView('evaluate');
-      },
+        // ดึงข้อมูลจาก Apps Script (คืน JSON ผ่าน doGet?action=getData)
+        fetch(this.gasUrl + '?action=getData')
+          .then(res => res.json())
+          .then((serverData) => {
+            MOCK_EXPERTS = serverData.experts;
+            MOCK_DATA.phases = serverData.phases;
+            MOCK_DATA.tools = serverData.tools;
+            MOCK_DATA.items = serverData.items;
+            appState.evaluations = serverData.evaluations || {};
+            appState.toolStatuses = serverData.toolStatuses || {};
 
-      setAdminTab(tabName) {
-        appState.adminTab = tabName;
-        this.renderAdminTabContent();
-        this.updateAdminTabStyles();
-      },
+            if (MOCK_EXPERTS.length > 0) {
+              appState.currentUser = MOCK_EXPERTS[0];
+            }
 
-      handleScoreChange(itemId, score) {
-        const key = `${appState.currentUser.id}_${appState.selectedTool.id}_${itemId}`;
-        if (!appState.evaluations[key]) appState.evaluations[key] = {};
-        appState.evaluations[key].score = score;
-      },
+            this.populateRoleSelector();
+            this.render();
+          })
+          .catch((error) => {
+            document.getElementById('app-container').innerHTML = `<div class="text-red-500 p-8 text-center bg-red-50 rounded-xl border border-red-200"><i class="fa-solid fa-triangle-exclamation text-3xl mb-3"></i><br>ไม่สามารถโหลดข้อมูลได้: ${error.message}<br><button onclick="localStorage.removeItem('IOC_GAS_URL'); app.init();" class="mt-4 text-sm underline text-teal-600">แก้ไขลิงก์ Web app</button></div>`;
+          });
+      },
 
-      handleCommentChange(itemId, comment) {
-        const key = `${appState.currentUser.id}_${appState.selectedTool.id}_${itemId}`;
-        if (!appState.evaluations[key]) appState.evaluations[key] = {};
-        appState.evaluations[key].comment = comment;
-      },
+      getTemplate(id) { return document.getElementById(id).content.cloneNode(true); },
+      clearContainer(id) { document.getElementById(id).innerHTML = ''; },
 
-      prepareSavePayload() {
-        const uid = appState.currentUser.id;
-        const tool = appState.selectedTool;
-        const items = MOCK_DATA.items.filter(i => i.toolId === tool.id);
-        let evalsToSave = [];
-        
-        items.forEach(i => {
-           const val = appState.evaluations[`${uid}_${tool.id}_${i.id}`];
-           if(val && val.score !== undefined) {
-              evalsToSave.push({ itemId: i.id, score: val.score, comment: val.comment || "" });
-           }
-        });
-        return evalsToSave;
-      },
+      showToast(type, message) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        const bg = type === 'error' ? 'bg-red-500' : 'bg-teal-600';
+        const icon = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
+        
+        toast.className = `${bg} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 transform transition-all duration-300 translate-y-full opacity-0`;
+        toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span class="font-medium">${message}</span>`;
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.remove('translate-y-full', 'opacity-0'), 10);
+        setTimeout(() => {
+          toast.classList.add('opacity-0');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      },
 
-      saveDraft(event) {
-        const uid = appState.currentUser.id;
-        const tid = appState.selectedTool.id;
-        const currentStatus = appState.toolStatuses[uid]?.[tid];
-        const newStatus = currentStatus === 'submitted' ? 'submitted' : 'draft';
-        const payload = this.prepareSavePayload();
-        
-        const btn = event.currentTarget;
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
-        btn.disabled = true;
+      getStatusBadgeHTML(status) {
+        if (status === 'submitted') return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-500"><i class="fa-solid fa-circle-check"></i> ประเมินแล้ว</span>`;
+        if (status === 'draft') return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-500"><i class="fa-solid fa-clock"></i> บันทึกร่าง</span>`;
+        return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-500"><i class="fa-solid fa-circle-exclamation"></i> ยังไม่ประเมิน</span>`;
+      },
 
-        google.script.run
-          .withSuccessHandler(() => {
-            if (!appState.toolStatuses[uid]) appState.toolStatuses[uid] = {};
-            appState.toolStatuses[uid][tid] = newStatus;
-            
-            this.showToast('success', 'บันทึกร่างลงฐานข้อมูลเรียบร้อยแล้ว');
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
-            
-            document.getElementById('eval-status-container').innerHTML = 
-              this.getStatusBadgeHTML(newStatus) + 
-              (newStatus === 'submitted' ? `<span class="text-sm text-slate-500 flex items-center gap-1 ml-2"><i class="fa-solid fa-circle-info"></i> สามารถแก้ไขและอัปเดตผลได้</span>` : '');
-          })
-          .withFailureHandler(() => {
-            this.showToast('error', 'เกิดข้อผิดพลาดในการบันทึกร่าง');
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
-          })
-          .saveEvaluationData(uid, tid, newStatus, payload);
-      },
+      switchRole(value) {
+        if (value === 'admin') {
+          appState.isAdmin = true;
+        } else {
+          appState.isAdmin = false;
+          appState.currentUser = MOCK_EXPERTS.find(exp => exp.id === value);
+          appState.view = 'dashboard';
+        }
+        this.render();
+      },
 
-      submitEvaluation(event) {
-        const uid = appState.currentUser.id;
-        const tool = appState.selectedTool;
-        const items = MOCK_DATA.items.filter(i => i.toolId === tool.id);
-        
-        const isComplete = items.every(i => {
-          const val = appState.evaluations[`${uid}_${tool.id}_${i.id}`];
-          return val && val.score !== undefined;
-        });
+      setView(viewName) {
+        appState.view = viewName;
+        window.scrollTo(0, 0);
+        this.render();
+      },
 
-        if (!isComplete) {
-          this.showToast('error', 'กรุณาประเมินให้ครบทุกข้อก่อนทำการส่ง');
-          return;
-        }
+      openEvaluation(toolId) {
+        appState.selectedTool = MOCK_DATA.tools.find(t => t.id === toolId);
+        this.setView('evaluate');
+      },
 
-        const payload = this.prepareSavePayload();
-        const btn = event.currentTarget;
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังส่งข้อมูล...';
-        btn.disabled = true;
+      setAdminTab(tabName) {
+        appState.adminTab = tabName;
+        this.renderAdminTabContent();
+        this.updateAdminTabStyles();
+      },
 
-        google.script.run
-          .withSuccessHandler(() => {
-             if (!appState.toolStatuses[uid]) appState.toolStatuses[uid] = {};
-             appState.toolStatuses[uid][tool.id] = 'submitted';
-             
-             this.showToast('success', 'บันทึกและส่งผลการประเมินเรียบร้อยแล้ว');
-             setTimeout(() => this.setView('dashboard'), 1500);
-          })
-          .withFailureHandler(() => {
-             this.showToast('error', 'เกิดข้อผิดพลาดในการส่งผลประเมิน');
-             btn.innerHTML = originalHtml;
-             btn.disabled = false;
-          })
-          .saveEvaluationData(uid, tool.id, 'submitted', payload);
-      },
+      handleScoreChange(itemId, score) {
+        const key = `${appState.currentUser.id}_${appState.selectedTool.id}_${itemId}`;
+        if (!appState.evaluations[key]) appState.evaluations[key] = {};
+        appState.evaluations[key].score = score;
+      },
 
-      populateRoleSelector() {
-        const optgroup = document.getElementById('expert-options');
-        const select = document.getElementById('role-selector');
-        optgroup.innerHTML = '';
-        MOCK_EXPERTS.forEach(exp => {
-          const option = document.createElement('option');
-          option.value = exp.id;
-          option.textContent = exp.name;
-          optgroup.appendChild(option);
-        });
-        
-        // Remove the "loading" placeholder option if it exists
-        if(select.options[0].value === "") {
-          select.remove(0);
-        }
-      },
+      handleCommentChange(itemId, comment) {
+        const key = `${appState.currentUser.id}_${appState.selectedTool.id}_${itemId}`;
+        if (!appState.evaluations[key]) appState.evaluations[key] = {};
+        appState.evaluations[key].comment = comment;
+      },
 
-      render() {
-        this.clearContainer('app-container');
-        if (appState.isAdmin) {
-          this.renderAdminDashboard();
-        } else {
-          if (appState.view === 'dashboard') this.renderExpertDashboard();
-          else if (appState.view === 'evaluate' && appState.selectedTool) this.renderEvaluationForm();
-        }
-      },
+      prepareSavePayload() {
+        const uid = appState.currentUser.id;
+        const tool = appState.selectedTool;
+        const items = MOCK_DATA.items.filter(i => i.toolId === tool.id);
+        let evalsToSave = [];
+        
+        items.forEach(i => {
+           const val = appState.evaluations[`${uid}_${tool.id}_${i.id}`];
+           if(val && val.score !== undefined) {
+              evalsToSave.push({ itemId: i.id, score: val.score, comment: val.comment || "" });
+           }
+        });
+        return evalsToSave;
+      },
 
-      renderExpertDashboard() {
-        const container = document.getElementById('app-container');
-        const dashNode = this.getTemplate('tpl-expert-dashboard');
-        
-        const uid = appState.currentUser.id;
-        const totalTools = MOCK_DATA.tools.length;
-        let completedTools = 0;
-        MOCK_DATA.tools.forEach(t => {
-          if (appState.toolStatuses[uid]?.[t.id] === 'submitted') completedTools++;
-        });
-        const progressPercent = Math.round((completedTools / totalTools) * 100) || 0;
+      saveDraft(event) {
+        const uid = appState.currentUser.id;
+        const tid = appState.selectedTool.id;
+        const currentStatus = appState.toolStatuses[uid]?.[tid];
+        const newStatus = currentStatus === 'submitted' ? 'submitted' : 'draft';
+        const payload = this.prepareSavePayload();
+        
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึก...';
+        btn.disabled = true;
 
-        dashNode.getElementById('welcome-name').textContent = `ยินดีต้อนรับ, ${appState.currentUser.name}`;
-        dashNode.getElementById('progress-text').textContent = `${completedTools} / ${totalTools} เครื่องมือ`;
-        dashNode.getElementById('progress-bar').style.width = `${progressPercent}%`;
+        this.postSave({ expertId: uid, toolId: tid, status: newStatus, evals: payload })
+          .then(() => {
+            if (!appState.toolStatuses[uid]) appState.toolStatuses[uid] = {};
+            appState.toolStatuses[uid][tid] = newStatus;
 
-        const phasesContainer = dashNode.getElementById('phases-container');
-        
-        MOCK_DATA.phases.forEach(phase => {
-          const phaseTools = MOCK_DATA.tools.filter(t => t.phaseId === phase.id);
-          if (phaseTools.length === 0) return;
+            this.showToast('success', 'บันทึกร่างลงฐานข้อมูลเรียบร้อยแล้ว');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
 
-          const phaseNode = this.getTemplate('tpl-phase-group');
-          phaseNode.querySelector('.phase-title').textContent = phase.label;
-          const toolsList = phaseNode.querySelector('.tools-list');
+            document.getElementById('eval-status-container').innerHTML =
+              this.getStatusBadgeHTML(newStatus) +
+              (newStatus === 'submitted' ? `<span class="text-sm text-slate-500 flex items-center gap-1 ml-2"><i class="fa-solid fa-circle-info"></i> สามารถแก้ไขและอัปเดตผลได้</span>` : '');
+          })
+          .catch(() => {
+            this.showToast('error', 'เกิดข้อผิดพลาดในการบันทึกร่าง');
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+          });
+      },
 
-          phaseTools.forEach(tool => {
-            const toolNode = this.getTemplate('tpl-tool-item');
-            const status = appState.toolStatuses[uid]?.[tool.id] || 'pending';
-            
-            toolNode.querySelector('.tool-name').textContent = tool.name;
-            toolNode.querySelector('.tool-status').innerHTML = this.getStatusBadgeHTML(status);
-            
-            const btn = toolNode.querySelector('.action-btn');
-            if (status === 'submitted') {
-              btn.innerHTML = `<i class="fa-solid fa-pen"></i> แก้ไขการประเมิน`;
-            } else if (status === 'draft') {
-               btn.innerHTML = `<i class="fa-solid fa-play"></i> ทำต่อให้เสร็จ`;
-            } else {
-              btn.innerHTML = 'เริ่มประเมิน';
-            }
+      submitEvaluation(event) {
+        const uid = appState.currentUser.id;
+        const tool = appState.selectedTool;
+        const items = MOCK_DATA.items.filter(i => i.toolId === tool.id);
+        
+        const isComplete = items.every(i => {
+          const val = appState.evaluations[`${uid}_${tool.id}_${i.id}`];
+          return val && val.score !== undefined;
+        });
 
-            toolNode.querySelector('.tool-row').onclick = () => this.openEvaluation(tool.id);
-            toolsList.appendChild(toolNode);
-          });
-          phasesContainer.appendChild(phaseNode);
-        });
+        if (!isComplete) {
+          this.showToast('error', 'กรุณาประเมินให้ครบทุกข้อก่อนทำการส่ง');
+          return;
+        }
 
-        container.appendChild(dashNode);
-      },
+        const payload = this.prepareSavePayload();
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังส่งข้อมูล...';
+        btn.disabled = true;
 
-      renderEvaluationForm() {
-        const container = document.getElementById('app-container');
-        const formNode = this.getTemplate('tpl-evaluation-form');
-        
-        const tool = appState.selectedTool;
-        const phase = MOCK_DATA.phases.find(p => p.id === tool.phaseId);
-        const uid = appState.currentUser.id;
-        const status = appState.toolStatuses[uid]?.[tool.id] || 'pending';
-        const items = MOCK_DATA.items.filter(i => i.toolId === tool.id);
+        this.postSave({ expertId: uid, toolId: tool.id, status: 'submitted', evals: payload })
+          .then(() => {
+             if (!appState.toolStatuses[uid]) appState.toolStatuses[uid] = {};
+             appState.toolStatuses[uid][tool.id] = 'submitted';
 
-        formNode.getElementById('eval-phase-label').textContent = phase?.label || 'ไม่ระบุระยะ';
-        formNode.getElementById('eval-tool-name').textContent = tool.name;
-        formNode.getElementById('eval-current-user-name').textContent = appState.currentUser.name;
-        
-        let statusHtml = this.getStatusBadgeHTML(status);
-        if (status === 'submitted') {
-          statusHtml += `<span class="text-sm text-slate-500 flex items-center gap-1 ml-2"><i class="fa-solid fa-circle-info"></i> สามารถแก้ไขและอัปเดตผลได้</span>`;
-          formNode.getElementById('btn-submit-text').textContent = 'อัปเดตผลการประเมิน';
-        }
-        formNode.getElementById('eval-status-container').innerHTML = statusHtml;
+             this.showToast('success', 'บันทึกและส่งผลการประเมินเรียบร้อยแล้ว');
+             setTimeout(() => this.setView('dashboard'), 1500);
+          })
+          .catch(() => {
+             this.showToast('error', 'เกิดข้อผิดพลาดในการส่งผลประเมิน');
+             btn.innerHTML = originalHtml;
+             btn.disabled = false;
+          });
+      },
 
-        const tbody = formNode.getElementById('eval-items-tbody');
-        
-        items.forEach((item, index) => {
-          const key = `${uid}_${tool.id}_${item.id}`;
-          const evalData = appState.evaluations[key] || {};
-          const score = evalData.score;
-          const comment = evalData.comment || '';
+      populateRoleSelector() {
+        const optgroup = document.getElementById('expert-options');
+        const select = document.getElementById('role-selector');
+        optgroup.innerHTML = '';
+        MOCK_EXPERTS.forEach(exp => {
+          const option = document.createElement('option');
+          option.value = exp.id;
+          option.textContent = exp.name;
+          optgroup.appendChild(option);
+        });
+        
+        // Remove the "loading" placeholder option if it exists
+        if(select.options[0].value === "") {
+          select.remove(0);
+        }
+      },
 
-          const tr = document.createElement('tr');
-          tr.className = "hover:bg-slate-50/50 transition-colors";
-          tr.innerHTML = `
-            <td class="p-4 text-center font-medium text-slate-500">${index + 1}</td>
-            <td class="p-4 text-slate-800">
-               <div>${item.text}</div>
-               ${item.objective !== '-' ? `<div class="text-xs text-slate-400 mt-1">อ้างอิง: ${item.objective}</div>` : ''}
-            </td>
-            <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="1" class="w-5 h-5 text-teal-600 focus:ring-teal-500 accent-teal-600 cursor-pointer" ${score === 1 ? 'checked' : ''}></td>
-            <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="0" class="w-5 h-5 text-yellow-500 focus:ring-yellow-400 accent-yellow-500 cursor-pointer" ${score === 0 ? 'checked' : ''}></td>
-            <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="-1" class="w-5 h-5 text-rose-500 focus:ring-rose-500 accent-rose-500 cursor-pointer" ${score === -1 ? 'checked' : ''}></td>
-            <td class="p-4"><textarea rows="2" placeholder="เพิ่มข้อเสนอแนะ..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm font-sarabun outline-none">${comment}</textarea></td>
-          `;
+      render() {
+        this.clearContainer('app-container');
+        if (appState.isAdmin) {
+          this.renderAdminDashboard();
+        } else {
+          if (appState.view === 'dashboard') this.renderExpertDashboard();
+          else if (appState.view === 'evaluate' && appState.selectedTool) this.renderEvaluationForm();
+        }
+      },
 
-          tr.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.onchange = (e) => this.handleScoreChange(item.id, parseInt(e.target.value));
-          });
-          tr.querySelector('textarea').oninput = (e) => this.handleCommentChange(item.id, e.target.value);
-          tbody.appendChild(tr);
-        });
+      renderExpertDashboard() {
+        const container = document.getElementById('app-container');
+        const dashNode = this.getTemplate('tpl-expert-dashboard');
+        
+        const uid = appState.currentUser.id;
+        const totalTools = MOCK_DATA.tools.length;
+        let completedTools = 0;
+        MOCK_DATA.tools.forEach(t => {
+          if (appState.toolStatuses[uid]?.[t.id] === 'submitted') completedTools++;
+        });
+        const progressPercent = Math.round((completedTools / totalTools) * 100) || 0;
 
-        container.appendChild(formNode);
-      },
+        dashNode.getElementById('welcome-name').textContent = `ยินดีต้อนรับ, ${appState.currentUser.name}`;
+        dashNode.getElementById('progress-text').textContent = `${completedTools} / ${totalTools} เครื่องมือ`;
+        dashNode.getElementById('progress-bar').style.width = `${progressPercent}%`;
 
-      renderAdminDashboard() {
-        const container = document.getElementById('app-container');
-        const adminNode = this.getTemplate('tpl-admin-dashboard');
-        
-        const totalExperts = MOCK_EXPERTS.length;
-        const totalTools = MOCK_DATA.tools.length;
-        const totalEvaluationsNeeded = totalExperts * totalTools;
-        let totalEvaluationsDone = 0;
+        const phasesContainer = dashNode.getElementById('phases-container');
+        
+        MOCK_DATA.phases.forEach(phase => {
+          const phaseTools = MOCK_DATA.tools.filter(t => t.phaseId === phase.id);
+          if (phaseTools.length === 0) return;
 
-        MOCK_EXPERTS.forEach(exp => {
-          MOCK_DATA.tools.forEach(tool => {
-            if (appState.toolStatuses[exp.id]?.[tool.id] === 'submitted') totalEvaluationsDone++;
-          });
-        });
+          const phaseNode = this.getTemplate('tpl-phase-group');
+          phaseNode.querySelector('.phase-title').textContent = phase.label;
+          const toolsList = phaseNode.querySelector('.tools-list');
 
-        const percentComplete = Math.round((totalEvaluationsDone / totalEvaluationsNeeded) * 100) || 0;
+          phaseTools.forEach(tool => {
+            const toolNode = this.getTemplate('tpl-tool-item');
+            const status = appState.toolStatuses[uid]?.[tool.id] || 'pending';
+            
+            toolNode.querySelector('.tool-name').textContent = tool.name;
+            toolNode.querySelector('.tool-status').innerHTML = this.getStatusBadgeHTML(status);
+            
+            const btn = toolNode.querySelector('.action-btn');
+            if (status === 'submitted') {
+              btn.innerHTML = `<i class="fa-solid fa-pen"></i> แก้ไขการประเมิน`;
+            } else if (status === 'draft') {
+               btn.innerHTML = `<i class="fa-solid fa-play"></i> ทำต่อให้เสร็จ`;
+            } else {
+              btn.innerHTML = 'เริ่มประเมิน';
+            }
 
-        adminNode.getElementById('stat-percent').textContent = `${percentComplete}%`;
-        adminNode.getElementById('stat-experts').textContent = `${totalExperts} ท่าน`;
-        adminNode.getElementById('stat-tools').textContent = `${totalTools} ชุด`;
-        adminNode.getElementById('stat-done').textContent = `${totalEvaluationsDone} / ${totalEvaluationsNeeded}`;
+            toolNode.querySelector('.tool-row').onclick = () => this.openEvaluation(tool.id);
+            toolsList.appendChild(toolNode);
+          });
+          phasesContainer.appendChild(phaseNode);
+        });
 
-        container.appendChild(adminNode);
-        this.renderAdminTabContent();
-        this.updateAdminTabStyles();
-      },
+        container.appendChild(dashNode);
+      },
 
-      updateAdminTabStyles() {
-        const tabs = ['overview', 'items', 'experts'];
-        tabs.forEach(tab => {
-          const el = document.getElementById(`tab-${tab}`);
-          if(!el) return;
-          if (appState.adminTab === tab) {
-            el.className = "flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-cyan-500 text-cyan-700 bg-cyan-50/50";
-          } else {
-            el.className = "flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50";
-          }
-        });
-      },
+      renderEvaluationForm() {
+        const container = document.getElementById('app-container');
+        const formNode = this.getTemplate('tpl-evaluation-form');
+        
+        const tool = appState.selectedTool;
+        const phase = MOCK_DATA.phases.find(p => p.id === tool.phaseId);
+        const uid = appState.currentUser.id;
+        const status = appState.toolStatuses[uid]?.[tool.id] || 'pending';
+        const items = MOCK_DATA.items.filter(i => i.toolId === tool.id);
 
-      renderAdminTabContent() {
-        const container = document.getElementById('admin-tab-content');
-        if (!container) return;
-        let html = '';
+        formNode.getElementById('eval-phase-label').textContent = phase?.label || 'ไม่ระบุระยะ';
+        formNode.getElementById('eval-tool-name').textContent = tool.name;
+        formNode.getElementById('eval-current-user-name').textContent = appState.currentUser.name;
+        
+        let statusHtml = this.getStatusBadgeHTML(status);
+        if (status === 'submitted') {
+          statusHtml += `<span class="text-sm text-slate-500 flex items-center gap-1 ml-2"><i class="fa-solid fa-circle-info"></i> สามารถแก้ไขและอัปเดตผลได้</span>`;
+          formNode.getElementById('btn-submit-text').textContent = 'อัปเดตผลการประเมิน';
+        }
+        formNode.getElementById('eval-status-container').innerHTML = statusHtml;
 
-        if (appState.adminTab === 'overview') {
-          html += `<div class="space-y-6"><h3 class="text-lg font-bold text-slate-800 border-l-4 border-teal-500 pl-3">ความคืบหน้าแยกตามระยะการวิจัย</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-6">`;
-          MOCK_DATA.phases.forEach(phase => {
-            const phaseTools = MOCK_DATA.tools.filter(t => t.phaseId === phase.id);
-            if(phaseTools.length === 0) return;
-            
-            let phaseDone = 0;
-            const phaseNeeded = phaseTools.length * MOCK_EXPERTS.length;
-            
-            MOCK_EXPERTS.forEach(exp => {
-              phaseTools.forEach(tool => {
-                if (appState.toolStatuses[exp.id]?.[tool.id] === 'submitted') phaseDone++;
-              });
-            });
-            
-            const p = phaseNeeded > 0 ? Math.round((phaseDone / phaseNeeded) * 100) : 0;
-            html += `
-              <div class="border border-gray-100 rounded-lg p-5 bg-slate-50">
-                <div class="font-bold text-slate-700 mb-3">${phase.label}</div>
-                <div class="flex justify-between text-sm mb-1 text-slate-600">
-                  <span>สำเร็จแล้ว ${phaseDone}/${phaseNeeded} รายการ</span>
-                  <span class="font-bold">${p}%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div class="bg-cyan-600 h-2.5 rounded-full" style="width: ${p}%"></div>
-                </div>
-              </div>`;
-          });
-          html += `</div></div>`;
-        }
-        else if (appState.adminTab === 'items') {
-          html += `<div class="space-y-8"><h3 class="text-lg font-bold text-slate-800 border-l-4 border-teal-500 pl-3">ชีตรวมการประเมินค่าดัชนี IOC (รายเครื่องมือและรายข้อ)</h3>`;
-          MOCK_DATA.tools.forEach(tool => {
-            const toolItems = MOCK_DATA.items.filter(i => i.toolId === tool.id);
-            if (toolItems.length === 0) return;
-            const phase = MOCK_DATA.phases.find(p => p.id === tool.phaseId);
+        const tbody = formNode.getElementById('eval-items-tbody');
+        
+        items.forEach((item, index) => {
+          const key = `${uid}_${tool.id}_${item.id}`;
+          const evalData = appState.evaluations[key] || {};
+          const score = evalData.score;
+          const comment = evalData.comment || '';
 
-            html += `
-              <div class="border border-cyan-200 rounded-xl overflow-hidden">
-                <div class="bg-cyan-50 px-5 py-3 border-b border-cyan-200 flex justify-between items-center">
-                  <div>
-                    <div class="text-xs font-bold text-cyan-600 mb-1">${phase ? phase.label : ''}</div>
-                    <h4 class="font-bold text-slate-800 text-lg">${tool.name}</h4>
-                  </div>
-                </div>
-                <div class="overflow-x-auto">
-                  <table class="w-full text-left border-collapse min-w-[800px]">
-                    <thead>
-                      <tr class="bg-slate-50 text-slate-700 border-b border-gray-200 text-sm">
-                        <th class="p-3 w-10 text-center font-bold">ข้อ</th>
-                        <th class="p-3 font-bold">รายการประเมิน</th>
-                        <th class="p-3 w-12 text-center text-green-600 font-bold">+1</th>
-                        <th class="p-3 w-12 text-center text-yellow-600 font-bold">0</th>
-                        <th class="p-3 w-12 text-center text-rose-600 font-bold">-1</th>
-                        <th class="p-3 w-20 text-center font-bold bg-cyan-50">IOC</th>
-                        <th class="p-3 w-24 text-center font-bold">ผลประเมิน</th>
-                        <th class="p-3 w-64 font-bold">ข้อเสนอแนะรวม</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 text-sm">`;
+          const tr = document.createElement('tr');
+          tr.className = "hover:bg-slate-50/50 transition-colors";
+          tr.innerHTML = `
+            <td class="p-4 text-center font-medium text-slate-500">${index + 1}</td>
+            <td class="p-4 text-slate-800">
+               <div>${item.text}</div>
+               ${item.objective !== '-' ? `<div class="text-xs text-slate-400 mt-1">อ้างอิง: ${item.objective}</div>` : ''}
+            </td>
+            <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="1" class="w-5 h-5 text-teal-600 focus:ring-teal-500 accent-teal-600 cursor-pointer" ${score === 1 ? 'checked' : ''}></td>
+            <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="0" class="w-5 h-5 text-yellow-500 focus:ring-yellow-400 accent-yellow-500 cursor-pointer" ${score === 0 ? 'checked' : ''}></td>
+            <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="-1" class="w-5 h-5 text-rose-500 focus:ring-rose-500 accent-rose-500 cursor-pointer" ${score === -1 ? 'checked' : ''}></td>
+            <td class="p-4"><textarea rows="2" placeholder="เพิ่มข้อเสนอแนะ..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm font-sarabun outline-none">${comment}</textarea></td>
+          `;
 
-            toolItems.forEach((item, idx) => {
-              let plus = 0, zero = 0, minus = 0, sum = 0, comments = [], respondents = 0;
+          tr.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.onchange = (e) => this.handleScoreChange(item.id, parseInt(e.target.value));
+          });
+          tr.querySelector('textarea').oninput = (e) => this.handleCommentChange(item.id, e.target.value);
+          tbody.appendChild(tr);
+        });
 
-              MOCK_EXPERTS.forEach(exp => {
-                const evalData = appState.evaluations[`${exp.id}_${tool.id}_${item.id}`];
-                if (evalData && evalData.score !== undefined) {
-                  respondents++;
-                  sum += evalData.score;
-                  if (evalData.score === 1) plus++;
-                  if (evalData.score === 0) zero++;
-                  if (evalData.score === -1) minus++;
-                  if (evalData.comment?.trim()) {
-                    const shortName = exp.name.split(' ')[0] || exp.name;
-                    comments.push(`<span class="font-bold text-teal-700">${shortName}:</span> ${evalData.comment}`);
-                  }
-                }
-              });
+        container.appendChild(formNode);
+      },
 
-              const totalE = MOCK_EXPERTS.length;
-              const ioc = respondents > 0 ? (sum / totalE).toFixed(2) : '-';
-              let iocStatus = '-', statusClass = 'text-gray-400';
-              
-              if (ioc !== '-') {
-                if (parseFloat(ioc) >= 0.5) {
-                  iocStatus = 'ใช้ได้';
-                  statusClass = 'text-green-600 font-bold bg-green-50 px-2 py-1 rounded';
-                } else {
-                  iocStatus = 'ปรับปรุง';
-                  statusClass = 'text-rose-600 font-bold bg-rose-50 px-2 py-1 rounded';
-                }
-              }
+      renderAdminDashboard() {
+        const container = document.getElementById('app-container');
+        const adminNode = this.getTemplate('tpl-admin-dashboard');
+        
+        const totalExperts = MOCK_EXPERTS.length;
+        const totalTools = MOCK_DATA.tools.length;
+        const totalEvaluationsNeeded = totalExperts * totalTools;
+        let totalEvaluationsDone = 0;
 
-              const commentsHtml = comments.length > 0 
-                ? `<ul class="list-disc pl-3 space-y-1">${comments.map(c => `<li>${c}</li>`).join('')}</ul>`
-                : `<span class="text-gray-400">-</span>`;
+        MOCK_EXPERTS.forEach(exp => {
+          MOCK_DATA.tools.forEach(tool => {
+            if (appState.toolStatuses[exp.id]?.[tool.id] === 'submitted') totalEvaluationsDone++;
+          });
+        });
 
-              html += `
-                <tr class="hover:bg-slate-50 transition-colors">
-                  <td class="p-3 text-center text-slate-500">${idx + 1}</td>
-                  <td class="p-3 text-slate-800 pr-4">${item.text}</td>
-                  <td class="p-3 text-center bg-green-50/30">${plus}</td>
-                  <td class="p-3 text-center bg-yellow-50/30">${zero}</td>
-                  <td class="p-3 text-center bg-rose-50/30">${minus}</td>
-                  <td class="p-3 text-center font-bold text-cyan-700 bg-cyan-50/30">${ioc}</td>
-                  <td class="p-3 text-center"><span class="${statusClass}">${iocStatus}</span></td>
-                  <td class="p-3 text-slate-600 text-xs">${commentsHtml}</td>
-                </tr>`;
-            });
-            html += `</tbody></table></div></div>`;
-          });
-          html += `</div>`;
-        }
-        else if (appState.adminTab === 'experts') {
-          html += `<div class="space-y-6"><h3 class="text-lg font-bold text-slate-800 border-l-4 border-teal-500 pl-3">สถานะการประเมินรายผู้ทรงคุณวุฒิ</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-6">`;
-          MOCK_EXPERTS.forEach(exp => {
-            let expDone = 0;
-            MOCK_DATA.tools.forEach(tool => {
-              if (appState.toolStatuses[exp.id]?.[tool.id] === 'submitted') expDone++;
-            });
-            const avatarTxt = exp.name.split(' ')[0].substring(0, 2) || "U";
-            html += `
-              <div class="border border-gray-200 rounded-xl p-5 shadow-sm bg-white">
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="w-10 h-10 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold text-sm uppercase">${avatarTxt}</div>
-                  <div>
-                    <div class="font-bold text-slate-800">${exp.name}</div>
-                    <div class="text-xs text-slate-500">ส่งแล้ว ${expDone}/${MOCK_DATA.tools.length} เครื่องมือ</div>
-                  </div>
-                </div>
-                <div class="space-y-2">`;
-            
-            MOCK_DATA.tools.forEach(tool => {
-              const status = appState.toolStatuses[exp.id]?.[tool.id] || 'pending';
-              html += `
-                <div class="text-xs flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100">
-                  <span class="truncate w-3/4" title="${tool.name}">${tool.name}</span>
-                  ${this.getStatusBadgeHTML(status)}
-                </div>`;
-            });
-            html += `</div></div>`;
-          });
-          html += `</div></div>`;
-        }
-        container.innerHTML = html;
-      }
-    };
+        const percentComplete = Math.round((totalEvaluationsDone / totalEvaluationsNeeded) * 100) || 0;
 
-    document.addEventListener('DOMContentLoaded', () => { app.init(); });
-  </script>
+        adminNode.getElementById('stat-percent').textContent = `${percentComplete}%`;
+        adminNode.getElementById('stat-experts').textContent = `${totalExperts} ท่าน`;
+        adminNode.getElementById('stat-tools').textContent = `${totalTools} ชุด`;
+        adminNode.getElementById('stat-done').textContent = `${totalEvaluationsDone} / ${totalEvaluationsNeeded}`;
+
+        container.appendChild(adminNode);
+        this.renderAdminTabContent();
+        this.updateAdminTabStyles();
+      },
+
+      updateAdminTabStyles() {
+        const tabs = ['overview', 'items', 'experts'];
+        tabs.forEach(tab => {
+          const el = document.getElementById(`tab-${tab}`);
+          if(!el) return;
+          if (appState.adminTab === tab) {
+            el.className = "flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-cyan-500 text-cyan-700 bg-cyan-50/50";
+          } else {
+            el.className = "flex items-center gap-2 px-6 py-3 font-bold text-sm border-b-2 transition-colors border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50";
+          }
+        });
+      },
+
+      renderAdminTabContent() {
+        const container = document.getElementById('admin-tab-content');
+        if (!container) return;
+        let html = '';
+
+        if (appState.adminTab === 'overview') {
+          html += `<div class="space-y-6"><h3 class="text-lg font-bold text-slate-800 border-l-4 border-teal-500 pl-3">ความคืบหน้าแยกตามระยะการวิจัย</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-6">`;
+          MOCK_DATA.phases.forEach(phase => {
+            const phaseTools = MOCK_DATA.tools.filter(t => t.phaseId === phase.id);
+            if(phaseTools.length === 0) return;
+            
+            let phaseDone = 0;
+            const phaseNeeded = phaseTools.length * MOCK_EXPERTS.length;
+            
+            MOCK_EXPERTS.forEach(exp => {
+              phaseTools.forEach(tool => {
+                if (appState.toolStatuses[exp.id]?.[tool.id] === 'submitted') phaseDone++;
+              });
+            });
+            
+            const p = phaseNeeded > 0 ? Math.round((phaseDone / phaseNeeded) * 100) : 0;
+            html += `
+              <div class="border border-gray-100 rounded-lg p-5 bg-slate-50">
+                <div class="font-bold text-slate-700 mb-3">${phase.label}</div>
+                <div class="flex justify-between text-sm mb-1 text-slate-600">
+                  <span>สำเร็จแล้ว ${phaseDone}/${phaseNeeded} รายการ</span>
+                  <span class="font-bold">${p}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                  <div class="bg-cyan-600 h-2.5 rounded-full" style="width: ${p}%"></div>
+                </div>
+              </div>`;
+          });
+          html += `</div></div>`;
+        }
+        else if (appState.adminTab === 'items') {
+          html += `<div class="space-y-8"><h3 class="text-lg font-bold text-slate-800 border-l-4 border-teal-500 pl-3">ชีตรวมการประเมินค่าดัชนี IOC (รายเครื่องมือและรายข้อ)</h3>`;
+          MOCK_DATA.tools.forEach(tool => {
+            const toolItems = MOCK_DATA.items.filter(i => i.toolId === tool.id);
+            if (toolItems.length === 0) return;
+            const phase = MOCK_DATA.phases.find(p => p.id === tool.phaseId);
+
+            html += `
+              <div class="border border-cyan-200 rounded-xl overflow-hidden">
+                <div class="bg-cyan-50 px-5 py-3 border-b border-cyan-200 flex justify-between items-center">
+                  <div>
+                    <div class="text-xs font-bold text-cyan-600 mb-1">${phase ? phase.label : ''}</div>
+                    <h4 class="font-bold text-slate-800 text-lg">${tool.name}</h4>
+                  </div>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                      <tr class="bg-slate-50 text-slate-700 border-b border-gray-200 text-sm">
+                        <th class="p-3 w-10 text-center font-bold">ข้อ</th>
+                        <th class="p-3 font-bold">รายการประเมิน</th>
+                        <th class="p-3 w-12 text-center text-green-600 font-bold">+1</th>
+                        <th class="p-3 w-12 text-center text-yellow-600 font-bold">0</th>
+                        <th class="p-3 w-12 text-center text-rose-600 font-bold">-1</th>
+                        <th class="p-3 w-20 text-center font-bold bg-cyan-50">IOC</th>
+                        <th class="p-3 w-24 text-center font-bold">ผลประเมิน</th>
+                        <th class="p-3 w-64 font-bold">ข้อเสนอแนะรวม</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 text-sm">`;
+
+            toolItems.forEach((item, idx) => {
+              let plus = 0, zero = 0, minus = 0, sum = 0, comments = [], respondents = 0;
+
+              MOCK_EXPERTS.forEach(exp => {
+                const evalData = appState.evaluations[`${exp.id}_${tool.id}_${item.id}`];
+                if (evalData && evalData.score !== undefined) {
+                  respondents++;
+                  sum += evalData.score;
+                  if (evalData.score === 1) plus++;
+                  if (evalData.score === 0) zero++;
+                  if (evalData.score === -1) minus++;
+                  if (evalData.comment?.trim()) {
+                    const shortName = exp.name.split(' ')[0] || exp.name;
+                    comments.push(`<span class="font-bold text-teal-700">${shortName}:</span> ${evalData.comment}`);
+                  }
+                }
+              });
+
+              const totalE = MOCK_EXPERTS.length;
+              const ioc = respondents > 0 ? (sum / totalE).toFixed(2) : '-';
+              let iocStatus = '-', statusClass = 'text-gray-400';
+              
+              if (ioc !== '-') {
+                if (parseFloat(ioc) >= 0.5) {
+                  iocStatus = 'ใช้ได้';
+                  statusClass = 'text-green-600 font-bold bg-green-50 px-2 py-1 rounded';
+                } else {
+                  iocStatus = 'ปรับปรุง';
+                  statusClass = 'text-rose-600 font-bold bg-rose-50 px-2 py-1 rounded';
+                }
+              }
+
+              const commentsHtml = comments.length > 0 
+                ? `<ul class="list-disc pl-3 space-y-1">${comments.map(c => `<li>${c}</li>`).join('')}</ul>`
+                : `<span class="text-gray-400">-</span>`;
+
+              html += `
+                <tr class="hover:bg-slate-50 transition-colors">
+                  <td class="p-3 text-center text-slate-500">${idx + 1}</td>
+                  <td class="p-3 text-slate-800 pr-4">${item.text}</td>
+                  <td class="p-3 text-center bg-green-50/30">${plus}</td>
+                  <td class="p-3 text-center bg-yellow-50/30">${zero}</td>
+                  <td class="p-3 text-center bg-rose-50/30">${minus}</td>
+                  <td class="p-3 text-center font-bold text-cyan-700 bg-cyan-50/30">${ioc}</td>
+                  <td class="p-3 text-center"><span class="${statusClass}">${iocStatus}</span></td>
+                  <td class="p-3 text-slate-600 text-xs">${commentsHtml}</td>
+                </tr>`;
+            });
+            html += `</tbody></table></div></div>`;
+          });
+          html += `</div>`;
+        }
+        else if (appState.adminTab === 'experts') {
+          html += `<div class="space-y-6"><h3 class="text-lg font-bold text-slate-800 border-l-4 border-teal-500 pl-3">สถานะการประเมินรายผู้ทรงคุณวุฒิ</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-6">`;
+          MOCK_EXPERTS.forEach(exp => {
+            let expDone = 0;
+            MOCK_DATA.tools.forEach(tool => {
+              if (appState.toolStatuses[exp.id]?.[tool.id] === 'submitted') expDone++;
+            });
+            const avatarTxt = exp.name.split(' ')[0].substring(0, 2) || "U";
+            html += `
+              <div class="border border-gray-200 rounded-xl p-5 shadow-sm bg-white">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-10 h-10 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center font-bold text-sm uppercase">${avatarTxt}</div>
+                  <div>
+                    <div class="font-bold text-slate-800">${exp.name}</div>
+                    <div class="text-xs text-slate-500">ส่งแล้ว ${expDone}/${MOCK_DATA.tools.length} เครื่องมือ</div>
+                  </div>
+                </div>
+                <div class="space-y-2">`;
+            
+            MOCK_DATA.tools.forEach(tool => {
+              const status = appState.toolStatuses[exp.id]?.[tool.id] || 'pending';
+              html += `
+                <div class="text-xs flex items-center justify-between p-2 rounded bg-slate-50 border border-slate-100">
+                  <span class="truncate w-3/4" title="${tool.name}">${tool.name}</span>
+                  ${this.getStatusBadgeHTML(status)}
+                </div>`;
+            });
+            html += `</div></div>`;
+          });
+          html += `</div></div>`;
+        }
+        container.innerHTML = html;
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => { app.init(); });
+  </script>
 </body>
 </html>

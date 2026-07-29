@@ -1,8 +1,33 @@
+// doGet:
+//  - ?action=getData  -> คืนข้อมูลทั้งหมดเป็น JSON (ใช้เมื่อเปิดหน้าเว็บผ่าน GitHub Pages)
+//  - ไม่มีพารามิเตอร์   -> เสิร์ฟหน้าเว็บ index (กรณีเปิดผ่าน Web app URL ของ GAS โดยตรง)
 function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'getData') {
+    return ContentService
+      .createTextOutput(JSON.stringify(getAppData()))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('ระบบประเมิน IOC - I Care Hub')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// doPost: รับข้อมูลการประเมินจากหน้าเว็บ (fetch แบบ POST) แล้วบันทึกลงชีต
+// body ที่คาดหวัง: { expertId, toolId, status, evals: [{itemId, score, comment}, ...] }
+// ใช้ Content-Type: text/plain ฝั่ง client เพื่อเลี่ยง CORS preflight ที่ GAS ตอบไม่ได้
+function doPost(e) {
+  try {
+    const req = JSON.parse(e.postData.contents);
+    const result = saveEvaluationData(req.expertId, req.toolId, req.status, req.evals || []);
+    return ContentService
+      .createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, message: String(err) }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 // ฟังก์ชันสร้างชีตบันทึกข้อมูล (Evaluations และ ToolStatus)
