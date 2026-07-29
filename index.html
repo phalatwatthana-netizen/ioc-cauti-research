@@ -724,7 +724,6 @@
             <td class="p-4 text-center font-medium text-slate-500">${index + 1}</td>
             <td class="p-4 text-slate-800">
                <div>${item.text}</div>
-               ${item.objective && item.objective !== '-' ? `<div class="text-xs text-slate-400 mt-1">${item.objective}</div>` : ''}
             </td>
             <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="1" class="w-5 h-5 text-teal-600 focus:ring-teal-500 accent-teal-600 cursor-pointer" ${score === 1 ? 'checked' : ''}></td>
             <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="0" class="w-5 h-5 text-yellow-500 focus:ring-yellow-400 accent-yellow-500 cursor-pointer" ${score === 0 ? 'checked' : ''}></td>
