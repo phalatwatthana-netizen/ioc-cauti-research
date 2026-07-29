@@ -147,6 +147,8 @@
         </div>
       </div>
 
+      <div id="eval-objective"></div>
+
       <div class="bg-teal-50 border border-teal-100 rounded-lg p-4 text-sm text-teal-900 flex flex-wrap gap-4 sm:gap-8 justify-center">
         <span class="font-bold">เกณฑ์การประเมิน:</span>
         <span class="flex items-center gap-2"><div class="w-4 h-4 bg-green-500 rounded-full"></div> +1 สอดคล้อง/เหมาะสม</span>
@@ -680,6 +682,47 @@
         container.appendChild(dashNode);
       },
 
+      // สร้างกล่อง "วัตถุประสงค์" (แสดงข้อความ) + ปุ่มดู "นิยามศัพท์" จากชีตวัตถุประสงค์และนิยาม
+      // เลือกวัตถุประสงค์ที่ตรงกับรหัส (O1–O4) ของเครื่องมือนั้น ถ้าไม่พบให้แสดงทั้งหมด
+      buildObjectiveBox(items) {
+        const rows = (appState.definitions && appState.definitions.rows) || [];
+        const esc = v => this.escapeHtml(v).replace(/\n/g, '<br>');
+        const isObj = a => /วัตถุประสงค์/.test(a || '');
+        const isDef = a => /นิยาม/.test(a || '');
+        const objectives = rows.filter(r => isObj(r[0]));
+        const glossary = rows.filter(r => isDef(r[0]));
+
+        // รหัสวัตถุประสงค์ของเครื่องมือนี้ (จากคอลัมน์ วัตถุประสงค์ ในชีต IOC)
+        const codeItem = (items || []).find(i => i.objective && i.objective !== '-');
+        const code = codeItem ? String(codeItem.objective).trim() : '';
+        let objRows = objectives;
+        if (code) {
+          const matched = objectives.filter(r => String(r[1] || '').trim() === code);
+          if (matched.length) objRows = matched;
+        }
+
+        let html = '';
+        if (objRows.length) {
+          const body = objRows.map(r => `<div class="text-slate-700">${esc(r[2] || r[1] || '')}</div>`).join('');
+          html += `<div class="bg-white rounded-xl shadow-sm border border-teal-100 p-4">
+            <div class="font-bold text-teal-800 mb-1 flex items-center gap-2"><i class="fa-solid fa-bullseye text-teal-600"></i> วัตถุประสงค์การวิจัย</div>
+            ${body}
+          </div>`;
+        }
+        if (glossary.length) {
+          const list = glossary.map(r =>
+            `<div class="mb-2 last:mb-0"><span class="font-semibold text-slate-700">${esc(r[1] || '')}</span>${r[2] ? ` <span class="text-slate-400">—</span> <span class="text-slate-600">${esc(r[2])}</span>` : ''}</div>`).join('');
+          html += `<details class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-3 group">
+            <summary class="cursor-pointer select-none px-4 py-2.5 font-bold text-white bg-teal-700 flex items-center gap-2">
+              <i class="fa-solid fa-book text-teal-200"></i> นิยามศัพท์เฉพาะ (กดเพื่อดู)
+              <i class="fa-solid fa-chevron-down ml-auto text-teal-200 text-sm transition-transform group-open:rotate-180"></i>
+            </summary>
+            <div class="p-4 text-sm">${list}</div>
+          </details>`;
+        }
+        return html;
+      },
+
       renderEvaluationForm() {
         const container = document.getElementById('app-container');
         const formNode = this.getTemplate('tpl-evaluation-form');
@@ -692,6 +735,8 @@
 
         formNode.getElementById('eval-phase-label').textContent = phase?.label || 'ไม่ระบุระยะ';
         formNode.getElementById('eval-tool-name').textContent = tool.name;
+        const objEl = formNode.getElementById('eval-objective');
+        if (objEl) objEl.innerHTML = this.buildObjectiveBox(items);
         formNode.getElementById('eval-current-user-name').textContent = appState.currentUser.name;
         
         let statusHtml = this.getStatusBadgeHTML(status);
