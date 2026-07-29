@@ -54,6 +54,28 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* ปุ่มให้คะแนน +1 / 0 / -1 (แบบการ์ด ใหญ่ ชัดเจน ทันสมัย) */
+    .score-group { display: flex; align-items: stretch; justify-content: center; gap: .5rem; }
+    .score-btn {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 68px; padding: .55rem .8rem; border-radius: .85rem;
+      border: 2px solid; background: #fff; cursor: pointer; font-weight: 700;
+      transition: all .15s ease; line-height: 1;
+    }
+    .score-btn .sb-num { font-size: 1.35rem; }
+    .score-btn .sb-txt { font-size: .72rem; margin-top: 3px; font-weight: 600; opacity: .85; white-space: nowrap; }
+    .score-btn:active { transform: scale(.96); }
+    .score-btn[data-c="green"] { border-color: #86efac; color: #15803d; }
+    .score-btn[data-c="amber"] { border-color: #fcd34d; color: #b45309; }
+    .score-btn[data-c="rose"]  { border-color: #fda4af; color: #be123c; }
+    .score-btn[data-c="green"]:hover { background: #f0fdf4; }
+    .score-btn[data-c="amber"]:hover { background: #fffbeb; }
+    .score-btn[data-c="rose"]:hover  { background: #fff1f2; }
+    .score-btn.selected { transform: translateY(-2px); }
+    .score-btn.selected[data-c="green"] { background: #16a34a; border-color: #16a34a; color: #fff; box-shadow: 0 4px 6px -1px rgba(22,163,74,.3), 0 0 0 3px #bbf7d0; }
+    .score-btn.selected[data-c="amber"] { background: #f59e0b; border-color: #f59e0b; color: #fff; box-shadow: 0 4px 6px -1px rgba(245,158,11,.3), 0 0 0 3px #fde68a; }
+    .score-btn.selected[data-c="rose"]  { background: #e11d48; border-color: #e11d48; color: #fff; box-shadow: 0 4px 6px -1px rgba(225,29,72,.3), 0 0 0 3px #fecdd3; }
   </style>
 </head>
 <body>
@@ -167,9 +189,7 @@
               <tr class="bg-teal-700 text-white border-b border-gray-200">
                 <th class="p-4 w-12 text-center font-bold">ข้อ</th>
                 <th class="p-4 min-w-[300px] font-bold">รายการประเมิน</th>
-                <th class="p-4 w-20 text-center font-bold">+1</th>
-                <th class="p-4 w-20 text-center font-bold">0</th>
-                <th class="p-4 w-20 text-center font-bold">-1</th>
+                <th class="p-4 w-64 text-center font-bold">การให้คะแนน</th>
                 <th class="p-4 min-w-[200px] font-bold">ข้อเสนอแนะเพื่อการปรับปรุง</th>
               </tr>
             </thead>
@@ -758,7 +778,7 @@
           if (item.part && item.part !== '-' && item.part !== lastPart) {
             lastPart = item.part;
             const sectionTr = document.createElement('tr');
-            sectionTr.innerHTML = `<td colspan="6" class="px-4 py-2 bg-teal-50 text-teal-800 font-bold text-sm border-y border-teal-100">${this.escapeHtml(item.part)}</td>`;
+            sectionTr.innerHTML = `<td colspan="4" class="px-4 py-2 bg-teal-50 text-teal-800 font-bold text-sm border-y border-teal-100">${this.escapeHtml(item.part)}</td>`;
             tbody.appendChild(sectionTr);
           }
 
@@ -774,14 +794,22 @@
             <td class="p-4 text-slate-800">
                <div>${item.text}</div>
             </td>
-            <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="1" class="w-5 h-5 text-teal-600 focus:ring-teal-500 accent-teal-600 cursor-pointer" ${score === 1 ? 'checked' : ''}></td>
-            <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="0" class="w-5 h-5 text-yellow-500 focus:ring-yellow-400 accent-yellow-500 cursor-pointer" ${score === 0 ? 'checked' : ''}></td>
-            <td class="p-4 text-center"><input type="radio" name="score_${item.id}" value="-1" class="w-5 h-5 text-rose-500 focus:ring-rose-500 accent-rose-500 cursor-pointer" ${score === -1 ? 'checked' : ''}></td>
+            <td class="p-4">
+              <div class="score-group">
+                <button type="button" class="score-btn${score === 1 ? ' selected' : ''}" data-c="green" data-val="1"><span class="sb-num">+1</span><span class="sb-txt">สอดคล้อง</span></button>
+                <button type="button" class="score-btn${score === 0 ? ' selected' : ''}" data-c="amber" data-val="0"><span class="sb-num">0</span><span class="sb-txt">ไม่แน่ใจ</span></button>
+                <button type="button" class="score-btn${score === -1 ? ' selected' : ''}" data-c="rose" data-val="-1"><span class="sb-num">-1</span><span class="sb-txt">ไม่สอดคล้อง</span></button>
+              </div>
+            </td>
             <td class="p-4"><textarea rows="2" placeholder="เพิ่มข้อเสนอแนะ..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm font-sarabun outline-none">${comment}</textarea></td>
           `;
 
-          tr.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.onchange = (e) => this.handleScoreChange(item.id, parseInt(e.target.value));
+          tr.querySelectorAll('.score-btn').forEach(btn => {
+            btn.onclick = () => {
+              tr.querySelectorAll('.score-btn').forEach(b => b.classList.remove('selected'));
+              btn.classList.add('selected');
+              this.handleScoreChange(item.id, parseInt(btn.dataset.val, 10));
+            };
           });
           tr.querySelector('textarea').oninput = (e) => this.handleCommentChange(item.id, e.target.value);
           tbody.appendChild(tr);
