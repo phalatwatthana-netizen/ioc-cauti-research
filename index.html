@@ -167,9 +167,14 @@
         <button onclick="app.setView('dashboard')" class="px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
           <i class="fa-solid fa-house"></i> กลับหน้าหลัก
         </button>
-        <button id="btn-next-tool" onclick="app.goNextTool()" class="px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-700 text-white hover:from-teal-700 hover:to-cyan-800 transition-colors shadow-sm">
-          แบบประเมินถัดไป <i class="fa-solid fa-arrow-right"></i>
-        </button>
+        <div class="flex gap-3">
+          <button id="btn-prev-tool" onclick="app.goPrevTool()" class="px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 bg-white border border-teal-500 text-teal-600 hover:bg-teal-50 transition-colors shadow-sm">
+            <i class="fa-solid fa-arrow-left"></i> แบบประเมินก่อนหน้า
+          </button>
+          <button id="btn-next-tool" onclick="app.goNextTool()" class="px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 bg-gradient-to-r from-teal-600 to-cyan-700 text-white hover:from-teal-700 hover:to-cyan-800 transition-colors shadow-sm">
+            แบบประเมินถัดไป <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
       </div>
 
       <div class="bg-white rounded-xl shadow-sm border border-teal-100 p-5 flex items-start gap-4 relative overflow-hidden">
@@ -536,6 +541,17 @@
         } else {
           this.showToast('success', 'นี่เป็นแบบประเมินชุดสุดท้ายแล้ว');
           this.setView('dashboard');
+        }
+      },
+
+      // ไปยังแบบประเมิน (เครื่องมือ) ชุดก่อนหน้าตามลำดับ ถ้าเป็นชุดแรกให้แจ้งเตือน
+      goPrevTool() {
+        const tools = MOCK_DATA.tools || [];
+        const idx = tools.findIndex(t => t.id === appState.selectedTool.id);
+        if (idx > 0) {
+          this.openEvaluation(tools[idx - 1].id);
+        } else {
+          this.showToast('success', 'นี่เป็นแบบประเมินชุดแรกแล้ว');
         }
       },
 
