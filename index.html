@@ -284,7 +284,7 @@
         this.gasUrl = this.resolveGasUrl();
         if (!this.gasUrl) { this.renderConfigScreen(); return; }
 
-        document.getElementById('app-container').innerHTML = '<div class="flex justify-center items-center h-64 flex-col gap-4"><div class="loader"></div><div class="text-teal-600 font-bold text-lg animate-pulse">กำลังโหลดข้อมูลจาก Google Sheets...</div></div>';
+        document.getElementById('app-container').innerHTML = '<div class="flex justify-center items-center h-64"><div class="loader"></div></div>';
 
         // ดึงข้อมูลจาก Apps Script (คืน JSON ผ่าน doGet?action=getData)
         fetch(this.gasUrl + '?action=getData')
