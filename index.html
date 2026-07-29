@@ -239,6 +239,15 @@
     let MOCK_EXPERTS = [];
     let MOCK_DATA = { phases: [], tools: [], items: [] };
 
+    // ระยะตามกระบวนการวิจัย R1D1R2D2 — กำหนดลำดับและป้ายหัวข้อให้ครบถ้วน
+    // แก้ไข/เพิ่มป้ายชื่อได้ผ่านชีต Settings ด้วยคีย์ phase_R1, phase_D1, phase_R2, phase_D2
+    const PHASE_META = {
+      'R1': { order: 1, label: 'ระยะ R1 — ศึกษาสถานการณ์ ปัญหา และความต้องการ (O1)' },
+      'D1': { order: 2, label: 'ระยะ D1 — พัฒนาแอปพลิเคชัน I Care Hub (O2)' },
+      'R2': { order: 3, label: 'ระยะ R2 — ประเมินประสิทธิผลของแอปพลิเคชัน (O3)' },
+      'D2': { order: 4, label: 'ระยะ D2 — ประเมินความพึงพอใจของผู้ใช้งาน (O4)' },
+    };
+
     const appState = {
       currentUser: null,
       isAdmin: false,
@@ -270,6 +279,18 @@
         set('app-title-short', 'app_title_short', 'IOC System');
         const title = this.S('app_title', 'ระบบประเมินเครื่องมือวิจัย (IOC)');
         if (title) document.title = title;
+      },
+
+      // จัดเรียงระยะตามลำดับ R1 → D1 → R2 → D2 และตั้งป้ายหัวข้อให้ครบถ้วน
+      // ระยะที่ไม่รู้จักจะเรียงต่อท้ายโดยคงชื่อเดิม
+      normalizePhases(phases) {
+        const list = (phases || []).map(p => {
+          const meta = PHASE_META[p.id];
+          const label = this.S('phase_' + p.id, meta ? meta.label : (p.label || p.id));
+          return { id: p.id, label: label, order: meta ? meta.order : 999 };
+        });
+        list.sort((a, b) => (a.order - b.order) || String(a.id).localeCompare(String(b.id)));
+        return list;
       },
 
       escapeHtml(v) {
@@ -396,7 +417,6 @@
           .then(res => res.json())
           .then((serverData) => {
             MOCK_EXPERTS = serverData.experts;
-            MOCK_DATA.phases = serverData.phases;
             MOCK_DATA.tools = serverData.tools;
             MOCK_DATA.items = serverData.items;
             appState.evaluations = serverData.evaluations || {};
@@ -404,6 +424,8 @@
             appState.settings = serverData.settings || {};
             appState.instructions = serverData.instructions || { headers: [], rows: [] };
             appState.definitions = serverData.definitions || { headers: [], rows: [] };
+            // จัดลำดับ/ป้ายชื่อระยะ R1 D1 R2 D2 (ทำหลังโหลด settings เพื่อให้ override ได้)
+            MOCK_DATA.phases = this.normalizePhases(serverData.phases);
 
             if (MOCK_EXPERTS.length > 0) {
               appState.currentUser = MOCK_EXPERTS[0];
