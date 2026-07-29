@@ -213,7 +213,7 @@
                 <th class="p-4 w-12 text-center font-bold">ข้อ</th>
                 <th class="p-4 min-w-[300px] font-bold">รายการประเมิน</th>
                 <th class="p-4 w-64 text-center font-bold">การให้คะแนน</th>
-                <th class="p-4 min-w-[200px] font-bold">ข้อเสนอแนะเพื่อการปรับปรุง</th>
+                <th class="p-4 min-w-[360px] font-bold">ข้อเสนอแนะเพื่อการปรับปรุง</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200" id="eval-items-tbody"></tbody>
@@ -896,7 +896,7 @@
                 <button type="button" class="score-btn${score === -1 ? ' selected' : ''}" data-c="rose" data-val="-1"><span class="sb-num">-1</span><span class="sb-txt">ไม่สอดคล้อง</span></button>
               </div>
             </td>
-            <td class="p-4"><textarea rows="2" placeholder="เพิ่มข้อเสนอแนะ..." class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-sm font-sarabun outline-none">${comment}</textarea></td>
+            <td class="p-4"><textarea rows="4" placeholder="เพิ่มข้อเสนอแนะ..." class="w-full min-h-[110px] p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-base font-sarabun outline-none resize-y">${comment}</textarea></td>
           `;
 
           tr.querySelectorAll('.score-btn').forEach(btn => {
