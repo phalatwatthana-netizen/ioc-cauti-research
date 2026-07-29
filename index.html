@@ -286,13 +286,20 @@
         const esc = v => this.escapeHtml(v).replace(/\n/g, '<br>');
 
         const groups = [];
+        const byTitle = {};
         let cur = null;
         grid.rows.forEach(r => {
           const head = (r[0] || '').trim();
           const rest = r.slice(1).map(c => (c || '').trim()).filter(c => c !== '');
           if (head !== '') {
-            cur = { title: head, items: [] };
-            groups.push(cur);
+            // หัวข้อที่ซ้ำกันให้รวมอยู่กลุ่มเดียว (แสดงหัวข้อรอบเดียว)
+            if (byTitle[head]) {
+              cur = byTitle[head];
+            } else {
+              cur = { title: head, items: [] };
+              byTitle[head] = cur;
+              groups.push(cur);
+            }
           } else if (!cur) {
             cur = { title: '', items: [] };
             groups.push(cur);
