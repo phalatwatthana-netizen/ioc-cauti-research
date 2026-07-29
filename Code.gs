@@ -148,11 +148,12 @@ function getAppData() {
     const toolId = row['ชุดที่'];
     const phaseName = row['ระยะ'];
     const toolName = row['เครื่องมือ'];
-    const itemId = row['ข้อที่'];
+    const itemNo = row['ข้อที่'];            // เลขข้อในแต่ละตอน (นับใหม่ทุกตอน จึงซ้ำได้)
+    const seq = row['ลำดับ'];                // ลำดับรวมทั้งชุด (ไม่ซ้ำ) ใช้เป็นรหัสข้อ
     const question = row['ข้อคำถาม / รายการประเมิน'];
 
     // ข้ามแถวว่าง
-    if (!toolId || !itemId || !question) return;
+    if (!toolId || !itemNo || !question) return;
 
     if (phaseName) phasesSet.add(phaseName);
 
@@ -165,9 +166,14 @@ function getAppData() {
       });
     }
 
-    // เก็บรายการคำถาม
+    // เก็บรายการคำถาม — ใช้ "ลำดับ" เป็นรหัสข้อ (id) เพราะไม่ซ้ำทั้งชุด
+    // ถ้าไม่มีลำดับ ให้สร้างรหัสไม่ซ้ำจาก ชุดที่-ตอน-ข้อ-ลำดับแถว กันชนกัน
+    const uniqueId = (seq !== undefined && seq !== null && String(seq).trim() !== '')
+      ? String(seq).trim()
+      : `${toolId}-${(row['ตอน/ด้าน'] || '').toString().trim()}-${itemNo}-${items.length}`;
     items.push({
-      id: itemId,
+      id: uniqueId,
+      no: itemNo,
       toolId: toolId,
       text: question,
       objective: row['วัตถุประสงค์'] || '-',
