@@ -461,17 +461,21 @@
       populateRoleSelector() {
         const optgroup = document.getElementById('expert-options');
         const select = document.getElementById('role-selector');
-        optgroup.innerHTML = '';
-        MOCK_EXPERTS.forEach(exp => {
+        if (optgroup) optgroup.innerHTML = '';
+        (MOCK_EXPERTS || []).forEach(exp => {
           const option = document.createElement('option');
           option.value = exp.id;
           option.textContent = exp.name;
-          optgroup.appendChild(option);
+          if (optgroup) optgroup.appendChild(option);
         });
-        
-        // Remove the "loading" placeholder option if it exists
-        if(select.options[0].value === "") {
-          select.remove(0);
+
+        // ลบ option ตัวแรกที่เป็น placeholder (value ว่าง) หากยังมีอยู่
+        if (select && select.options) {
+          for (let i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === "") { select.remove(i); break; }
+          }
+          // เลือกผู้ทรงคุณวุฒิคนแรกเป็นค่าเริ่มต้น
+          if (MOCK_EXPERTS && MOCK_EXPERTS.length > 0) select.value = MOCK_EXPERTS[0].id;
         }
       },
 
