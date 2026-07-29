@@ -278,22 +278,41 @@
           .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
       },
 
-      // สร้างตารางจากข้อมูล grid { headers, rows } (แถวแรกเป็นหัวตาราง)
-      renderGridTable(grid) {
+      // จัดกลุ่มตามหัวข้อ: คอลัมน์แรก (A) = หัวข้อ (แสดงครั้งเดียว ไม่ซ้ำ),
+      // คอลัมน์ที่เหลือ (B, C, ...) = รายการย่อยใต้หัวข้อนั้น
+      // แถวที่คอลัมน์ A ว่าง จะถือว่าเป็นรายการย่อยของหัวข้อก่อนหน้า
+      renderGroupedList(grid) {
         if (!grid || !grid.rows || grid.rows.length === 0) return '';
         const esc = v => this.escapeHtml(v).replace(/\n/g, '<br>');
-        const head = (grid.headers || []).map(h =>
-          `<th class="p-3 text-left font-bold text-slate-700 border-b border-gray-200 bg-slate-50 align-top">${esc(h)}</th>`).join('');
-        const body = grid.rows.map(r =>
-          `<tr class="hover:bg-slate-50">${r.map(c =>
-            `<td class="p-3 border-b border-gray-100 text-slate-700 align-top">${esc(c)}</td>`).join('')}</tr>`).join('');
-        return `<div class="overflow-x-auto"><table class="w-full text-sm border-collapse">
-          ${head ? `<thead><tr>${head}</tr></thead>` : ''}<tbody>${body}</tbody></table></div>`;
+
+        const groups = [];
+        let cur = null;
+        grid.rows.forEach(r => {
+          const head = (r[0] || '').trim();
+          const rest = r.slice(1).map(c => (c || '').trim()).filter(c => c !== '');
+          if (head !== '') {
+            cur = { title: head, items: [] };
+            groups.push(cur);
+          } else if (!cur) {
+            cur = { title: '', items: [] };
+            groups.push(cur);
+          }
+          if (rest.length) cur.items.push(rest);
+        });
+
+        return groups.map(g => {
+          const items = g.items.map(parts =>
+            `<li>${parts.map(esc).join(' <span class="text-slate-400">—</span> ')}</li>`).join('');
+          return `<div class="mb-4 last:mb-0">
+            ${g.title ? `<div class="font-bold text-teal-800 mb-1.5">${esc(g.title)}</div>` : ''}
+            ${items ? `<ul class="list-disc pl-6 space-y-1 text-slate-700">${items}</ul>` : ''}
+          </div>`;
+        }).join('');
       },
 
       // กล่องแบบพับเก็บได้ (native <details>) สำหรับคำชี้แจง / วัตถุประสงค์และนิยาม
       renderInfoPanel(title, icon, grid) {
-        const table = this.renderGridTable(grid);
+        const table = this.renderGroupedList(grid);
         if (!table) return '';
         return `<details class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group" open>
           <summary class="cursor-pointer select-none px-5 py-3 font-bold text-teal-800 bg-teal-50 border-b border-teal-100 flex items-center gap-2">
