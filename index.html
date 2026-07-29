@@ -183,6 +183,7 @@
           <i class="fa-solid fa-arrow-left text-xl"></i>
         </button>
         <div>
+          <div class="inline-block text-sm font-bold text-teal-700 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-full px-3 py-1 mb-2" id="eval-tool-set">เครื่องมือชุดที่ -</div>
           <div class="text-base text-cyan-600 font-bold mb-1" id="eval-phase-label">Phase Label</div>
           <h2 class="text-2xl font-bold text-slate-800 mb-2" id="eval-tool-name">Tool Name</h2>
           <div class="flex items-center gap-3" id="eval-status-container"></div>
@@ -842,6 +843,7 @@
         const status = appState.toolStatuses[uid]?.[tool.id] || 'pending';
         const items = MOCK_DATA.items.filter(i => i.toolId === tool.id);
 
+        formNode.getElementById('eval-tool-set').textContent = `เครื่องมือชุดที่ ${tool.id}`;
         formNode.getElementById('eval-phase-label').textContent = phase?.label || 'ไม่ระบุระยะ';
         formNode.getElementById('eval-tool-name').textContent = tool.name;
         const objEl = formNode.getElementById('eval-objective');
