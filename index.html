@@ -58,8 +58,8 @@
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <i class="fa-regular fa-circle-check text-cyan-200 text-2xl"></i>
-        <h1 class="font-bold text-xl tracking-wide hidden sm:block">ระบบประเมินเครื่องมือวิจัย (IOC)</h1>
-        <h1 class="font-bold text-xl tracking-wide sm:hidden">IOC System</h1>
+        <h1 id="app-title" class="font-bold text-xl tracking-wide hidden sm:block">ระบบประเมินเครื่องมือวิจัย (IOC)</h1>
+        <h1 id="app-title-short" class="font-bold text-xl tracking-wide sm:hidden">IOC System</h1>
       </div>
       
       <div class="flex items-center gap-4">
@@ -93,7 +93,7 @@
       <div class="bg-white rounded-xl shadow-sm border border-teal-100 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <div>
           <h2 class="text-2xl font-bold text-teal-900" id="welcome-name">ยินดีต้อนรับ</h2>
-          <p class="text-teal-600">กรุณาเลือกเครื่องมือวิจัยด้านล่างเพื่อทำการประเมิน IOC</p>
+          <p class="text-teal-600" id="welcome-subtitle">กรุณาเลือกเครื่องมือวิจัยด้านล่างเพื่อทำการประเมิน IOC</p>
         </div>
         <div class="w-full md:w-1/3">
           <div class="flex justify-between text-sm mb-1 text-teal-800 font-medium">
@@ -245,9 +245,31 @@
       adminTab: 'overview',
       evaluations: {}, 
       toolStatuses: {},
+      settings: {},
     };
 
     const app = {
+      // อ่านค่าจากชีต Settings (ถ้าไม่มีให้ใช้ค่า fallback) รองรับ {name} = ชื่อผู้ทรงฯ
+      S(key, fallback) {
+        let v = appState.settings && appState.settings[key];
+        if (v === undefined || v === null || v === '') v = fallback;
+        v = String(v);
+        if (appState.currentUser) v = v.replace(/\{name\}/g, appState.currentUser.name);
+        return v;
+      },
+
+      // นำค่าจากชีต Settings มาแสดงตามจุดต่าง ๆ ของหน้าเว็บแบบไดนามิก
+      applySettings() {
+        const set = (id, key, fallback) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = this.S(key, fallback);
+        };
+        set('app-title', 'app_title', 'ระบบประเมินเครื่องมือวิจัย (IOC)');
+        set('app-title-short', 'app_title_short', 'IOC System');
+        const title = this.S('app_title', 'ระบบประเมินเครื่องมือวิจัย (IOC)');
+        if (title) document.title = title;
+      },
+
       // หา URL ของ Web app จาก: พารามิเตอร์ ?gas=... > ค่าใน localStorage > ค่าคงที่ GAS_URL
       resolveGasUrl() {
         const p = new URLSearchParams(location.search).get('gas');
@@ -296,11 +318,13 @@
             MOCK_DATA.items = serverData.items;
             appState.evaluations = serverData.evaluations || {};
             appState.toolStatuses = serverData.toolStatuses || {};
+            appState.settings = serverData.settings || {};
 
             if (MOCK_EXPERTS.length > 0) {
               appState.currentUser = MOCK_EXPERTS[0];
             }
 
+            this.applySettings();
             this.populateRoleSelector();
             this.render();
           })
@@ -501,7 +525,8 @@
         });
         const progressPercent = Math.round((completedTools / totalTools) * 100) || 0;
 
-        dashNode.getElementById('welcome-name').textContent = `ยินดีต้อนรับ, ${appState.currentUser.name}`;
+        dashNode.getElementById('welcome-name').textContent = this.S('welcome_title', `ยินดีต้อนรับ, ${appState.currentUser.name}`);
+        dashNode.getElementById('welcome-subtitle').textContent = this.S('welcome_subtitle', 'กรุณาเลือกเครื่องมือวิจัยด้านล่างเพื่อทำการประเมิน IOC');
         dashNode.getElementById('progress-text').textContent = `${completedTools} / ${totalTools} เครื่องมือ`;
         dashNode.getElementById('progress-bar').style.width = `${progressPercent}%`;
 

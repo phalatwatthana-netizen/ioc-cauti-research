@@ -44,7 +44,8 @@ function setupDatabase() {
   // ชีตระบบที่ต้องใช้เพิ่มสำหรับการทำงานของแอป
   const systemSheetsDef = {
     'Evaluations': ['Expert_ID', 'ชุดที่', 'ข้อที่', 'คะแนน', 'ข้อเสนอแนะ', 'Timestamp'],
-    'ToolStatus': ['Expert_ID', 'ชุดที่', 'Status', 'Timestamp']
+    'ToolStatus': ['Expert_ID', 'ชุดที่', 'Status', 'Timestamp'],
+    'Settings': ['Key', 'Value']
   };
 
   const allDefs = { ...existingSheetsDef, ...systemSheetsDef };
@@ -56,6 +57,20 @@ function setupDatabase() {
       sheet.appendRow(allDefs[sheetName]);
       sheet.getRange(1, 1, 1, allDefs[sheetName].length).setFontWeight("bold").setBackground("#e0f2f1");
     }
+  }
+
+  // ใส่ค่าเริ่มต้นให้ชีต Settings หากยังว่าง (ใช้ควบคุมข้อความบนหน้าเว็บแบบไดนามิก)
+  // แก้ค่าในคอลัมน์ Value ได้เลย แล้วหน้าเว็บจะเปลี่ยนตาม (ใช้ {name} แทนชื่อผู้ทรงฯ ได้)
+  const settingsSheet = ss.getSheetByName('Settings');
+  if (settingsSheet && settingsSheet.getLastRow() <= 1) {
+    const defaults = [
+      ['app_title', 'ระบบประเมินเครื่องมือวิจัย (IOC)'],
+      ['app_title_short', 'IOC System'],
+      ['welcome_title', 'ยินดีต้อนรับผู้ทรงคุณวุฒิ'],
+      ['welcome_subtitle', 'กรุณาเลือกเครื่องมือวิจัยด้านล่างเพื่อทำการประเมิน IOC'],
+      ['criteria_label', 'เกณฑ์การประเมิน:']
+    ];
+    settingsSheet.getRange(2, 1, defaults.length, 2).setValues(defaults);
   }
 }
 
@@ -161,13 +176,22 @@ function getAppData() {
     };
   });
 
+  // 5. ดึงการตั้งค่าข้อความหน้าเว็บ จากชีต Settings (Key -> Value)
+  const settingsData = getSheetDataAsObjects('Settings');
+  let settings = {};
+  settingsData.forEach(s => {
+    const k = (s['Key'] || '').toString().trim();
+    if (k) settings[k] = s['Value'];
+  });
+
   return {
     experts: experts,
     phases: phases,
     tools: tools,
     items: items,
     toolStatuses: toolStatuses,
-    evaluations: evaluations
+    evaluations: evaluations,
+    settings: settings
   };
 }
 
