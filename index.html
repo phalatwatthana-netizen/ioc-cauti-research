@@ -444,7 +444,17 @@
         const el = rootNode.getElementById('info-sections');
         if (!el) return;
         let html = '';
-        html += this.renderInfoPanel(this.S('consent_title', 'เอกสารชี้แจงผู้เข้าร่วม & หนังสือยินยอม (Informed Consent)'), 'fa-file-signature', appState.consent);
+        // เอกสารชี้แจง & หนังสือยินยอม — ซ่อนไว้ กดไอคอนเปิดดูเป็นเอกสาร A4
+        if (appState.consent && appState.consent.rows && appState.consent.rows.length) {
+          html += `<button onclick="app.openConsentDoc()" class="w-full text-left bg-white rounded-xl shadow-sm border border-gray-200 hover:border-teal-300 hover:shadow transition px-5 py-3.5 flex items-center gap-3">
+            <span class="w-10 h-10 rounded-lg bg-gradient-to-br from-teal-600 to-cyan-700 text-white flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-file-signature"></i></span>
+            <span class="flex-1">
+              <span class="block font-bold text-slate-800">${this.escapeHtml(this.S('consent_title', 'เอกสารชี้แจงผู้เข้าร่วม & หนังสือยินยอม'))}</span>
+              <span class="block text-sm text-slate-500">Informed Consent — กดเพื่อเปิดดูเอกสาร (A4)</span>
+            </span>
+            <i class="fa-solid fa-up-right-from-square text-teal-600"></i>
+          </button>`;
+        }
         html += this.renderInfoPanel(this.S('instructions_title', 'คำชี้แจง'), 'fa-circle-info', appState.instructions);
         html += this.renderInfoPanel(this.S('definitions_title', 'วัตถุประสงค์และนิยาม'), 'fa-book', appState.definitions);
         el.innerHTML = html;
@@ -1060,6 +1070,66 @@ ${this.formStyle()}</head>
       // พรีวิวแบบประเมินรวมทุกชุด
       downloadAllForms() {
         this.showPreview(this.buildAllFormsHtml(), 'แบบประเมิน-IOC-รวมทุกชุด.pdf');
+      },
+
+      // สร้างเอกสารชี้แจง & หนังสือยินยอม เป็นเอกสาร A4 (แต่ละเอกสารขึ้นหน้าใหม่)
+      buildConsentHtml() {
+        const esc = v => this.escapeHtml(v);
+        const nl = v => this.nl2br(v);
+        const rows = (appState.consent && appState.consent.rows) || [];
+
+        // จัดกลุ่มตามเอกสาร (คอลัมน์ A) รักษาลำดับ
+        const docs = [];
+        const byDoc = {};
+        rows.forEach(r => {
+          const d = (r[0] || '').trim();
+          if (!byDoc[d]) { byDoc[d] = { title: d, rows: [] }; docs.push(byDoc[d]); }
+          byDoc[d].rows.push(r);
+        });
+
+        const sections = docs.map(doc => {
+          // จัดกลุ่มย่อยตามหัวข้อ (คอลัมน์ B) แบบต่อเนื่อง
+          let blocks = '', curHead = null, buf = [];
+          const flush = () => {
+            if (!buf.length) return;
+            if (buf.length > 1) {
+              blocks += `<ol>${buf.map(c => `<li>${nl(c)}</li>`).join('')}</ol>`;
+            } else {
+              blocks += `<p>${nl(buf[0])}</p>`;
+            }
+            buf = [];
+          };
+          doc.rows.forEach(r => {
+            const head = (r[1] || '').trim();
+            const content = r[2] || '';
+            if (head !== curHead) { flush(); curHead = head; if (head) blocks += `<h3>${esc(head)}</h3>`; }
+            if (String(content).trim() !== '') buf.push(content);
+          });
+          flush();
+          return `<div class="doc-page"><h2>${esc(doc.title)}</h2>${blocks}</div>`;
+        }).join('');
+
+        const title = this.S('app_title', 'ระบบประเมินเครื่องมือวิจัย (IOC)');
+        return `<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เอกสารชี้แจงและหนังสือยินยอม</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Sarabun','TH Sarabun New',sans-serif; color:#111; margin:0; background:#e5e7eb; }
+  .doc-page { background:#fff; width:794px; min-height:1123px; margin:16px auto; padding:56px 64px; box-shadow:0 1px 6px rgba(0,0,0,.15); }
+  h2 { font-size:20px; text-align:center; margin:0 0 16px; color:#0f766e; }
+  h3 { font-size:16px; margin:16px 0 6px; color:#0f766e; }
+  p { font-size:15px; margin:6px 0; line-height:1.7; text-align:justify; text-indent:1.2em; }
+  ol { font-size:15px; line-height:1.7; padding-left:1.5em; margin:6px 0; }
+  li { margin:3px 0; }
+  @media print { body { background:#fff; } .doc-page { box-shadow:none; margin:0; width:auto; min-height:auto; padding:1.2cm; page-break-after:always; } .doc-page:last-child { page-break-after:auto; } }
+</style></head>
+<body>${sections}</body></html>`;
+      },
+
+      openConsentDoc() {
+        this.showPreview(this.buildConsentHtml(), 'เอกสารชี้แจงและยินยอม.pdf');
       },
 
       renderEvaluationForm() {
