@@ -45,7 +45,8 @@ function setupDatabase() {
   const systemSheetsDef = {
     'Evaluations': ['Expert_ID', 'ชุดที่', 'ข้อที่', 'คะแนน', 'ข้อเสนอแนะ', 'Timestamp'],
     'ToolStatus': ['Expert_ID', 'ชุดที่', 'Status', 'Timestamp'],
-    'Settings': ['Key', 'Value']
+    'Settings': ['Key', 'Value'],
+    'คำชี้แจงเครื่องมือ': ['ชุดที่', 'เครื่องมือ', 'คำชี้แจง']
   };
 
   const allDefs = { ...existingSheetsDef, ...systemSheetsDef };
@@ -250,6 +251,15 @@ function getAppData() {
   const instructions = getSheetGrid('คำชี้แจง', 3);
   const definitions = getSheetGrid('วัตถุประสงค์และนิยาม', 3);
 
+  // 7. คำชี้แจงรายเครื่องมือ (ชุดที่ -> คำชี้แจง) จากชีต "คำชี้แจงเครื่องมือ" (A=ชุดที่, B=เครื่องมือ, C=คำชี้แจง)
+  const toolNoteGrid = getSheetGrid('คำชี้แจงเครื่องมือ', 3);
+  let toolNotes = {};
+  toolNoteGrid.rows.forEach(r => {
+    const id = (r[0] || '').trim();
+    if (!id) return;
+    toolNotes[id] = { name: (r[1] || '').trim(), note: (r[2] || '') };
+  });
+
   return {
     experts: experts,
     phases: phases,
@@ -259,7 +269,8 @@ function getAppData() {
     evaluations: evaluations,
     settings: settings,
     instructions: instructions,
-    definitions: definitions
+    definitions: definitions,
+    toolNotes: toolNotes
   };
 }
 

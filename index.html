@@ -325,6 +325,7 @@
       evaluations: {}, 
       toolStatuses: {},
       settings: {},
+      toolNotes: {},
     };
 
     const app = {
@@ -365,6 +366,11 @@
         return String(v === null || v === undefined ? '' : v)
           .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      },
+
+      // แปลงข้อความหลายบรรทัดให้ขึ้นบรรทัดใหม่ (ปลอดภัยจาก HTML)
+      nl2br(v) {
+        return this.escapeHtml(v).replace(/\r\n|\r|\n/g, '<br>');
       },
 
       // จัดกลุ่มแบบหลายชั้น ยุบหัวข้อที่ซ้ำในทุกคอลัมน์:
@@ -492,6 +498,7 @@
             appState.settings = serverData.settings || {};
             appState.instructions = serverData.instructions || { headers: [], rows: [] };
             appState.definitions = serverData.definitions || { headers: [], rows: [] };
+            appState.toolNotes = serverData.toolNotes || {};
             // จัดลำดับ/ป้ายชื่อระยะ R1 D1 R2 D2 (ทำหลังโหลด settings เพื่อให้ override ได้)
             MOCK_DATA.phases = this.normalizePhases(serverData.phases);
 
@@ -837,6 +844,18 @@
         }
 
         let html = '';
+        // คำชี้แจงเครื่องมือของชุดนี้ (พับเก็บได้ เปิดไว้เป็นค่าเริ่มต้น)
+        const curTool = appState.selectedTool;
+        const note = (curTool && appState.toolNotes && appState.toolNotes[curTool.id]) ? appState.toolNotes[curTool.id].note : '';
+        if (note) {
+          html += `<details class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group mb-3" open>
+            <summary class="cursor-pointer select-none px-4 py-2.5 font-bold text-white bg-gradient-to-r from-teal-600 to-cyan-700 flex items-center gap-2">
+              <i class="fa-solid fa-circle-info text-teal-200"></i> คำชี้แจงเครื่องมือ
+              <i class="fa-solid fa-chevron-down ml-auto text-teal-200 text-sm transition-transform group-open:rotate-180"></i>
+            </summary>
+            <div class="p-4 text-sm text-slate-700 leading-relaxed">${this.nl2br(note)}</div>
+          </details>`;
+        }
         if (objRows.length) {
           const body = objRows.map(r => `<div class="text-slate-700">${esc(r[2] || r[1] || '')}</div>`).join('');
           html += `<div class="bg-white rounded-xl shadow-sm border border-teal-100 p-4">
@@ -986,12 +1005,14 @@
             body += `<tr><td class="sec" colspan="6">${esc(item.part)}</td></tr>`;
           }
           n++;
-          body += `<tr><td class="c">${n}</td><td>${esc(item.text)}</td><td class="ck"></td><td class="ck"></td><td class="ck"></td><td></td></tr>`;
+          body += `<tr><td class="c">${n}</td><td>${this.nl2br(item.text)}</td><td class="ck"></td><td class="ck"></td><td class="ck"></td><td></td></tr>`;
         });
+        const note = (appState.toolNotes && appState.toolNotes[tool.id]) ? appState.toolNotes[tool.id].note : '';
         return `<div class="form-page">
   <h2>แบบประเมินความสอดคล้อง (IOC) — เครื่องมือชุดที่ ${esc(tool.id)}</h2>
   <div class="meta"><b>เครื่องมือ:</b> ${esc(tool.name)}</div>
   <div class="meta"><b>ระยะ:</b> ${esc(phase ? phase.label : '-')}</div>
+  ${note ? `<div class="obj"><b>คำชี้แจงเครื่องมือ:</b><br>${this.nl2br(note)}</div>` : ''}
   ${objText ? `<div class="obj"><b>วัตถุประสงค์:</b> ${esc(objText)}</div>` : ''}
   <div class="names"><div>ชื่อผู้ทรงคุณวุฒิ ...............................................</div><div>วันที่ ............................</div></div>
   <div class="crit"><b>เกณฑ์การให้คะแนน:</b> +1 = สอดคล้อง/เหมาะสม &nbsp;|&nbsp; 0 = ไม่แน่ใจ &nbsp;|&nbsp; -1 = ไม่สอดคล้อง (ทำเครื่องหมาย ✓ ในช่อง)</div>
@@ -1084,7 +1105,7 @@ ${this.formStyle()}</head>
           tr.innerHTML = `
             <td class="p-4 text-center font-medium text-slate-500">${index + 1}</td>
             <td class="p-4 text-slate-800">
-               <div>${item.text}</div>
+               <div>${this.nl2br(item.text)}</div>
             </td>
             <td class="p-4">
               <div class="score-group">
@@ -1259,7 +1280,7 @@ ${this.formStyle()}</head>
               html += `
                 <tr class="hover:bg-slate-50 transition-colors">
                   <td class="p-3 text-center text-slate-500">${idx + 1}</td>
-                  <td class="p-3 text-slate-800 pr-4">${item.text}</td>
+                  <td class="p-3 text-slate-800 pr-4">${this.nl2br(item.text)}</td>
                   <td class="p-3 text-center bg-green-50/30">${plus}</td>
                   <td class="p-3 text-center bg-yellow-50/30">${zero}</td>
                   <td class="p-3 text-center bg-rose-50/30">${minus}</td>
