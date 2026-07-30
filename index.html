@@ -1089,23 +1089,14 @@ ${this.formStyle()}</head>
 
         const sections = docs.map(doc => {
           // จัดกลุ่มย่อยตามหัวข้อ (คอลัมน์ B) แบบต่อเนื่อง
-          let blocks = '', curHead = null, buf = [];
-          const flush = () => {
-            if (!buf.length) return;
-            if (buf.length > 1) {
-              blocks += `<ol>${buf.map(c => `<li>${nl(c)}</li>`).join('')}</ol>`;
-            } else {
-              blocks += `<p>${nl(buf[0])}</p>`;
-            }
-            buf = [];
-          };
+          // แสดงทุกรายการเป็นย่อหน้าต่อเนื่องแบบไฟล์ Word (ไม่ใส่เลขลำดับอัตโนมัติ)
+          let blocks = '', curHead = null;
           doc.rows.forEach(r => {
             const head = (r[1] || '').trim();
             const content = r[2] || '';
-            if (head !== curHead) { flush(); curHead = head; if (head) blocks += `<h3>${esc(head)}</h3>`; }
-            if (String(content).trim() !== '') buf.push(content);
+            if (head !== curHead) { curHead = head; if (head) blocks += `<h3>${esc(head)}</h3>`; }
+            if (String(content).trim() !== '') blocks += `<p>${nl(content)}</p>`;
           });
-          flush();
           return `<div class="doc-page"><h2>${esc(doc.title)}</h2>${blocks}</div>`;
         }).join('');
 
