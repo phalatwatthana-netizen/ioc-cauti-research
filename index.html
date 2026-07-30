@@ -326,6 +326,7 @@
       toolStatuses: {},
       settings: {},
       toolNotes: {},
+      consent: { headers: [], rows: [] },
     };
 
     const app = {
@@ -443,6 +444,7 @@
         const el = rootNode.getElementById('info-sections');
         if (!el) return;
         let html = '';
+        html += this.renderInfoPanel(this.S('consent_title', 'เอกสารชี้แจงผู้เข้าร่วม & หนังสือยินยอม (Informed Consent)'), 'fa-file-signature', appState.consent);
         html += this.renderInfoPanel(this.S('instructions_title', 'คำชี้แจง'), 'fa-circle-info', appState.instructions);
         html += this.renderInfoPanel(this.S('definitions_title', 'วัตถุประสงค์และนิยาม'), 'fa-book', appState.definitions);
         el.innerHTML = html;
@@ -499,6 +501,7 @@
             appState.instructions = serverData.instructions || { headers: [], rows: [] };
             appState.definitions = serverData.definitions || { headers: [], rows: [] };
             appState.toolNotes = serverData.toolNotes || {};
+            appState.consent = serverData.consent || { headers: [], rows: [] };
             // จัดลำดับ/ป้ายชื่อระยะ R1 D1 R2 D2 (ทำหลังโหลด settings เพื่อให้ override ได้)
             MOCK_DATA.phases = this.normalizePhases(serverData.phases);
 

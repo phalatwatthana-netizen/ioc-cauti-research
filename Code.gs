@@ -46,7 +46,8 @@ function setupDatabase() {
     'Evaluations': ['Expert_ID', 'ชุดที่', 'ข้อที่', 'คะแนน', 'ข้อเสนอแนะ', 'Timestamp'],
     'ToolStatus': ['Expert_ID', 'ชุดที่', 'Status', 'Timestamp'],
     'Settings': ['Key', 'Value'],
-    'คำชี้แจงเครื่องมือ': ['ชุดที่', 'เครื่องมือ', 'คำชี้แจง']
+    'คำชี้แจงเครื่องมือ': ['ชุดที่', 'เครื่องมือ', 'คำชี้แจง'],
+    'เอกสารชี้แจงและยินยอม': ['เอกสาร', 'หัวข้อ', 'เนื้อหา']
   };
 
   const allDefs = { ...existingSheetsDef, ...systemSheetsDef };
@@ -260,6 +261,9 @@ function getAppData() {
     toolNotes[id] = { name: (r[1] || '').trim(), note: (r[2] || '') };
   });
 
+  // 8. เอกสารชี้แจงผู้เข้าร่วม & หนังสือยินยอม (A=เอกสาร, B=หัวข้อ, C=เนื้อหา)
+  const consent = getSheetGrid('เอกสารชี้แจงและยินยอม', 3);
+
   return {
     experts: experts,
     phases: phases,
@@ -270,7 +274,8 @@ function getAppData() {
     settings: settings,
     instructions: instructions,
     definitions: definitions,
-    toolNotes: toolNotes
+    toolNotes: toolNotes,
+    consent: consent
   };
 }
 
