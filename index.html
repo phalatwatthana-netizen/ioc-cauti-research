@@ -852,23 +852,43 @@
         return html;
       },
 
-      // สร้างไฟล์แบบฟอร์ม IOC (HTML พิมพ์ได้) ของเครื่องมือชุดปัจจุบัน แล้วให้ดาวน์โหลด
+      // แสดงพรีวิวแบบฟอร์มในหน้าต่างซ้อน (modal) พร้อมปุ่มบันทึกเป็น PDF / พิมพ์
+      showPreview(html) {
+        let overlay = document.getElementById('preview-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.id = 'preview-overlay';
+          overlay.className = 'fixed inset-0 z-[60] bg-black/50 flex flex-col p-2 sm:p-6';
+          overlay.innerHTML = `
+            <div class="bg-white rounded-xl shadow-2xl flex flex-col w-full h-full max-w-5xl mx-auto overflow-hidden">
+              <div class="flex items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-teal-600 to-cyan-700 text-white flex-wrap">
+                <span class="font-bold text-base"><i class="fa-solid fa-file-lines"></i> ตัวอย่างแบบประเมิน</span>
+                <div class="flex gap-2">
+                  <button id="preview-print" class="px-4 py-1.5 rounded-lg bg-white text-teal-700 font-bold text-sm hover:bg-teal-50"><i class="fa-solid fa-file-pdf"></i> บันทึกเป็น PDF / พิมพ์</button>
+                  <button id="preview-close" class="px-3 py-1.5 rounded-lg bg-white/20 text-white font-bold text-sm hover:bg-white/30"><i class="fa-solid fa-xmark"></i> ปิด</button>
+                </div>
+              </div>
+              <iframe id="preview-frame" class="flex-1 w-full bg-white" title="preview"></iframe>
+            </div>`;
+          document.body.appendChild(overlay);
+          overlay.querySelector('#preview-close').onclick = () => overlay.remove();
+          overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+        }
+        const frame = overlay.querySelector('#preview-frame');
+        frame.srcdoc = html;
+        overlay.querySelector('#preview-print').onclick = () => {
+          try { frame.contentWindow.focus(); frame.contentWindow.print(); }
+          catch (e) { this.showToast('error', 'ไม่สามารถเปิดหน้าต่างพิมพ์ได้'); }
+        };
+      },
+
+      // พรีวิวแบบฟอร์มของเครื่องมือชุดปัจจุบัน
       downloadForm() {
         const tool = appState.selectedTool;
         if (!tool) return;
         const items = MOCK_DATA.items.filter(i => i.toolId === tool.id);
         const phase = MOCK_DATA.phases.find(p => p.id === tool.phaseId);
-        const html = this.buildPrintableForm(tool, phase, items);
-        const blob = new Blob(['﻿' + html], { type: 'text/html;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `แบบประเมิน-IOC-ชุดที่-${tool.id}.html`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        this.showToast('success', 'ดาวน์โหลดแบบฟอร์มแล้ว — เปิดไฟล์แล้วสั่งพิมพ์ได้เลย');
+        this.showPreview(this.buildPrintableForm(tool, phase, items));
       },
 
       formStyle() {
@@ -955,30 +975,15 @@ ${this.formStyle()}</head>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
 ${this.formStyle()}</head>
 <body>
-  <div class="toolbar"><button onclick="window.print()">🖨 บันทึกเป็น PDF / พิมพ์</button></div>
   <h1>${esc(title)}</h1>
   <div class="meta" style="margin-bottom:12px;">แบบประเมินความสอดคล้อง (IOC) — รวมทุกชุด (${tools.length} ชุด)</div>
   ${sections}
 </body></html>`;
       },
 
+      // พรีวิวแบบประเมินรวมทุกชุด
       downloadAllForms() {
-        const html = this.buildAllFormsHtml();
-        const w = window.open('', '_blank');
-        if (w) {
-          w.document.open();
-          w.document.write(html);
-          w.document.close();
-          this.showToast('success', 'เปิดแบบประเมินรวมแล้ว — กดปุ่ม "บันทึกเป็น PDF" ด้านบน');
-        } else {
-          const blob = new Blob(['﻿' + html], { type: 'text/html;charset=utf-8' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url; a.download = 'แบบประเมิน-IOC-รวมทุกชุด.html';
-          document.body.appendChild(a); a.click(); a.remove();
-          URL.revokeObjectURL(url);
-          this.showToast('success', 'ดาวน์โหลดแล้ว — เปิดไฟล์แล้วสั่งพิมพ์/บันทึกเป็น PDF');
-        }
+        this.showPreview(this.buildAllFormsHtml());
       },
 
       renderEvaluationForm() {
