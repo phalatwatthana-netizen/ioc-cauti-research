@@ -3,9 +3,15 @@
 //  - ไม่มีพารามิเตอร์   -> เสิร์ฟหน้าเว็บ index (กรณีเปิดผ่าน Web app URL ของ GAS โดยตรง)
 function doGet(e) {
   if (e && e.parameter && e.parameter.action === 'getData') {
-    return ContentService
-      .createTextOutput(JSON.stringify(getAppData()))
-      .setMimeType(ContentService.MimeType.JSON);
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(getAppData()))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ error: String(err) }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
   }
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('ระบบประเมิน IOC - I Care Hub')

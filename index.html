@@ -500,8 +500,17 @@
 
         // ดึงข้อมูลจาก Apps Script (คืน JSON ผ่าน doGet?action=getData)
         fetch(this.gasUrl + '?action=getData')
-          .then(res => res.json())
-          .then((serverData) => {
+          .then(res => res.text())
+          .then((text) => {
+            let serverData;
+            try {
+              serverData = JSON.parse(text);
+            } catch (e) {
+              // ได้ HTML กลับมาแทน JSON (เช่น หน้า login/redirect หรือ error ของ GAS)
+              throw new Error('การเชื่อมต่อถูกเปลี่ยนเส้นทาง (ได้หน้าเว็บแทนข้อมูล) — ตรวจว่า Deploy ตั้ง "Who has access" เป็น Anyone และสร้าง New version แล้ว');
+            }
+            if (serverData && serverData.error) throw new Error(serverData.error);
+
             MOCK_EXPERTS = serverData.experts;
             MOCK_DATA.tools = serverData.tools;
             MOCK_DATA.items = serverData.items;
