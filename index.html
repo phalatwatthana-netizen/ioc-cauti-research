@@ -244,6 +244,7 @@
         <div class="max-w-7xl mx-auto flex justify-between items-center px-4">
           <div class="text-sm text-slate-500 hidden sm:block">
             สถานะจะบันทึกในนาม: <span class="font-bold text-slate-700" id="eval-current-user-name">User Name</span>
+            <span id="autosave-status" class="ml-3 font-medium"></span>
           </div>
           <div class="flex gap-3 w-full sm:w-auto">
             <button onclick="app.saveDraft(event)" class="flex-1 sm:flex-none px-6 py-2.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg hover:bg-yellow-200 transition-colors flex items-center justify-center gap-2">
@@ -619,6 +620,7 @@
         if (!appState.evaluations[key]) appState.evaluations[key] = {};
         appState.evaluations[key].score = score;
         this.updateScoreSummary();
+        this.scheduleAutosave();
       },
 
       // แถบสรุปรวมคะแนนท้ายฟอร์ม (อัปเดตสดเมื่อให้คะแนน)
@@ -664,6 +666,7 @@
         const key = `${appState.currentUser.id}_${appState.selectedTool.id}_${itemId}`;
         if (!appState.evaluations[key]) appState.evaluations[key] = {};
         appState.evaluations[key].comment = comment;
+        this.scheduleAutosave();
       },
 
       prepareSavePayload() {
@@ -674,11 +677,46 @@
         
         items.forEach(i => {
            const val = appState.evaluations[`${uid}_${tool.id}_${i.id}`];
-           if(val && val.score !== undefined) {
-              evalsToSave.push({ itemId: i.id, score: val.score, comment: val.comment || "" });
+           if (val && ((val.score !== undefined && val.score !== null) || (val.comment && val.comment.trim() !== ''))) {
+              evalsToSave.push({ itemId: i.id, score: (val.score === undefined ? null : val.score), comment: val.comment || "" });
            }
         });
         return evalsToSave;
+      },
+
+      // ตั้งเวลาบันทึกอัตโนมัติ (debounce) — รวมการเปลี่ยนแปลงหลายครั้งเป็นการบันทึกครั้งเดียว
+      scheduleAutosave() {
+        this.setAutosaveStatus('pending');
+        clearTimeout(this._autosaveTimer);
+        this._autosaveTimer = setTimeout(() => this.doAutosave(), 900);
+      },
+
+      setAutosaveStatus(state) {
+        const el = document.getElementById('autosave-status');
+        if (!el) return;
+        if (state === 'pending') el.innerHTML = '<i class="fa-solid fa-pen text-slate-400"></i> กำลังพิมพ์...';
+        else if (state === 'saving') el.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-teal-600"></i> กำลังบันทึก...';
+        else if (state === 'saved') el.innerHTML = '<i class="fa-solid fa-circle-check text-green-600"></i> บันทึกอัตโนมัติแล้ว';
+        else if (state === 'error') el.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-rose-600"></i> บันทึกอัตโนมัติไม่สำเร็จ';
+        else el.innerHTML = '';
+      },
+
+      doAutosave() {
+        if (!appState.currentUser || !appState.selectedTool) return;
+        const uid = appState.currentUser.id;
+        const tid = appState.selectedTool.id;
+        const payload = this.prepareSavePayload();
+        if (payload.length === 0) return;
+        // ถ้าส่งผลแล้ว (submitted) ให้คงสถานะ submitted ไว้ ไม่ถอยกลับเป็น draft
+        const status = appState.toolStatuses[uid]?.[tid] === 'submitted' ? 'submitted' : 'draft';
+        this.setAutosaveStatus('saving');
+        this.postSave({ expertId: uid, toolId: tid, status: status, evals: payload })
+          .then(() => {
+            if (!appState.toolStatuses[uid]) appState.toolStatuses[uid] = {};
+            if (appState.toolStatuses[uid][tid] !== 'submitted') appState.toolStatuses[uid][tid] = status;
+            this.setAutosaveStatus('saved');
+          })
+          .catch(() => this.setAutosaveStatus('error'));
       },
 
       saveDraft(event) {
