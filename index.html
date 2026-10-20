@@ -526,9 +526,14 @@
             <div class="p-6">
               ${msg ? `<div class="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-3 mb-4"><i class="fa-solid fa-circle-exclamation"></i> ${this.escapeHtml(msg)}</div>` : ''}
               <label class="block text-sm font-bold text-slate-700 mb-1">รหัสเข้าใช้งาน (Access Code)</label>
-              <input id="login-token" type="password" autocomplete="off" placeholder="กรอกรหัสที่ได้รับ"
-                class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base mb-4 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
-                onkeydown="if(event.key==='Enter'){app.doLogin(event);}">
+              <div class="relative mb-4">
+                <input id="login-token" type="password" autocomplete="off" placeholder="กรอกรหัสที่ได้รับ"
+                  class="w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-11 text-base focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                  onkeydown="if(event.key==='Enter'){app.doLogin(event);}">
+                <button type="button" onclick="app.togglePwd()" title="แสดง/ซ่อนรหัส" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-slate-400 hover:text-teal-600">
+                  <i id="pwd-eye" class="fa-solid fa-eye"></i>
+                </button>
+              </div>
               <button id="login-btn" onclick="app.doLogin(event)" class="w-full px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-700 text-white font-bold rounded-lg hover:from-teal-700 hover:to-cyan-800 transition-colors shadow-md">
                 <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ
               </button>
@@ -536,6 +541,14 @@
             </div>
           </div>`;
         const inp = document.getElementById('login-token'); if (inp) inp.focus();
+      },
+
+      togglePwd() {
+        const inp = document.getElementById('login-token');
+        const eye = document.getElementById('pwd-eye');
+        if (!inp) return;
+        if (inp.type === 'password') { inp.type = 'text'; if (eye) eye.className = 'fa-solid fa-eye-slash'; }
+        else { inp.type = 'password'; if (eye) eye.className = 'fa-solid fa-eye'; }
       },
 
       doLogin(event) {

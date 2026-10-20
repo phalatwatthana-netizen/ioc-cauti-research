@@ -112,7 +112,7 @@ function setupDatabase() {
       ['welcome_title', 'ยินดีต้อนรับผู้ทรงคุณวุฒิ'],
       ['welcome_subtitle', 'กรุณาเลือกเครื่องมือวิจัยด้านล่างเพื่อทำการประเมิน IOC'],
       ['criteria_label', 'เกณฑ์การประเมิน:'],
-      ['Admin_Code', 'admin1234']
+      ['Admin_Code', '1234']
     ];
     settingsSheet.getRange(2, 1, defaults.length, 2).setValues(defaults);
   }
