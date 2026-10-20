@@ -566,7 +566,13 @@
             this.setAuth(r.role === 'admin' ? { role: 'admin' } : { role: 'expert', expertId: r.expert.id });
             this.loadData();
           })
-          .catch(err => this.renderLoginScreen(err.message || 'เข้าสู่ระบบไม่สำเร็จ'));
+          .catch(err => {
+            let m = err.message || 'เข้าสู่ระบบไม่สำเร็จ';
+            if (/load failed|failed to fetch|networkerror/i.test(m)) {
+              m = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ — ตรวจว่า Deploy เป็น New version, ตั้ง "Who has access" = Anyone และลิงก์ Web app (/exec) ถูกต้อง';
+            }
+            this.renderLoginScreen(m);
+          });
       },
 
       loadData() {
