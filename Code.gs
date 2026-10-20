@@ -13,10 +13,46 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
+  // ตรวจสอบรหัสเข้าใช้งาน (login) — ไม่เปิดเผย token ของผู้อื่น
+  if (e && e.parameter && e.parameter.action === 'auth') {
+    try {
+      return ContentService
+        .createTextOutput(JSON.stringify(authenticate(e.parameter.token || '')))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ ok: false, error: String(err) }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
   return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('ระบบประเมิน IOC - I Care Hub')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// ตรวจรหัส: ตรงกับ Admin_Code (ใน Settings) -> admin, ตรงกับ Access_Token ของผู้ทรงฯ -> expert
+function authenticate(token) {
+  token = String(token || '').trim();
+  if (!token) return { ok: false };
+
+  // รหัสผู้ดูแลระบบจากชีต Settings (Key = Admin_Code)
+  const settingsData = getSheetDataAsObjects('Settings');
+  let adminCode = '';
+  settingsData.forEach(s => { if (String(s['Key'] || '').trim() === 'Admin_Code') adminCode = String(s['Value'] || '').trim(); });
+  if (adminCode && token === adminCode) return { ok: true, role: 'admin' };
+
+  // ผู้ทรงคุณวุฒิจาก Access_Token (ข้ามผู้ที่ Status = INACTIVE)
+  const experts = getSheetDataAsObjects('Experts');
+  for (let i = 0; i < experts.length; i++) {
+    const e = experts[i];
+    const tk = String(e['Access_Token'] || '').trim();
+    const status = String(e['Status'] || '').trim().toUpperCase();
+    if (tk && tk === token && status !== 'INACTIVE') {
+      return { ok: true, role: 'expert', expert: { id: e['Expert_ID'], name: e['Full_Name'] || e['Expert_ID'] } };
+    }
+  }
+  return { ok: false };
 }
 
 // doPost: รับข้อมูลการประเมินจากหน้าเว็บ (fetch แบบ POST) แล้วบันทึกลงชีต
@@ -75,7 +111,8 @@ function setupDatabase() {
       ['app_title_short', 'IOC System'],
       ['welcome_title', 'ยินดีต้อนรับผู้ทรงคุณวุฒิ'],
       ['welcome_subtitle', 'กรุณาเลือกเครื่องมือวิจัยด้านล่างเพื่อทำการประเมิน IOC'],
-      ['criteria_label', 'เกณฑ์การประเมิน:']
+      ['criteria_label', 'เกณฑ์การประเมิน:'],
+      ['Admin_Code', 'admin1234']
     ];
     settingsSheet.getRange(2, 1, defaults.length, 2).setValues(defaults);
   }

@@ -94,11 +94,14 @@
         <h1 id="app-title-short" class="font-bold text-xl tracking-wide sm:hidden">IOC System</h1>
       </div>
       
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <div class="text-sm bg-white/10 rounded-full px-4 py-1.5 flex items-center gap-2">
           <i class="fa-solid fa-user-doctor"></i>
           <span id="current-user-label" class="font-bold">กำลังโหลด...</span>
         </div>
+        <button onclick="app.logout()" title="ออกจากระบบ" class="text-white/90 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-9 h-9 flex items-center justify-center transition-colors">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
       </div>
     </div>
   </nav>
@@ -487,6 +490,73 @@
         this.gasUrl = this.resolveGasUrl();
         if (!this.gasUrl) { this.renderConfigScreen(); return; }
 
+        // ลิงก์ลัด: ?admin=1 หรือ ?expert=Exp01 = เข้าสู่ระบบอัตโนมัติ
+        const params = new URLSearchParams(location.search);
+        if (params.get('admin') === '1' || params.get('view') === 'admin') this.setAuth({ role: 'admin' });
+        else if (params.get('expert')) this.setAuth({ role: 'expert', expertId: params.get('expert') });
+
+        if (!this.getAuth()) { this.renderLoginScreen(); return; }
+        this.loadData();
+      },
+
+      getAuth() {
+        try { return JSON.parse(localStorage.getItem('IOC_AUTH') || 'null'); } catch (e) { return null; }
+      },
+      setAuth(obj) {
+        try { localStorage.setItem('IOC_AUTH', JSON.stringify(obj)); } catch (e) {}
+      },
+      logout() {
+        try { localStorage.removeItem('IOC_AUTH'); } catch (e) {}
+        appState.currentUser = null; appState.isAdmin = false;
+        this.renderLoginScreen();
+      },
+
+      // หน้าเข้าสู่ระบบ (กรอกรหัสเข้าใช้งาน)
+      renderLoginScreen(msg) {
+        const el = document.getElementById('app-container');
+        if (!el) return;
+        const label = document.getElementById('current-user-label'); if (label) label.textContent = '';
+        el.innerHTML = `
+          <div class="max-w-md mx-auto mt-6 sm:mt-12 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden animate-fade-in">
+            <div class="bg-gradient-to-r from-teal-600 to-cyan-700 text-white px-6 py-7 text-center">
+              <i class="fa-regular fa-circle-check text-4xl mb-2"></i>
+              <div class="text-xl font-bold">${this.escapeHtml(this.S('app_title', 'ระบบประเมินเครื่องมือวิจัย (IOC)'))}</div>
+              <div class="text-sm text-teal-100 mt-1">เข้าสู่ระบบเพื่อเริ่มการประเมิน</div>
+            </div>
+            <div class="p-6">
+              ${msg ? `<div class="text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-3 mb-4"><i class="fa-solid fa-circle-exclamation"></i> ${this.escapeHtml(msg)}</div>` : ''}
+              <label class="block text-sm font-bold text-slate-700 mb-1">รหัสเข้าใช้งาน (Access Code)</label>
+              <input id="login-token" type="password" autocomplete="off" placeholder="กรอกรหัสที่ได้รับ"
+                class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base mb-4 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none"
+                onkeydown="if(event.key==='Enter'){app.doLogin(event);}">
+              <button id="login-btn" onclick="app.doLogin(event)" class="w-full px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-700 text-white font-bold rounded-lg hover:from-teal-700 hover:to-cyan-800 transition-colors shadow-md">
+                <i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ
+              </button>
+              <p class="text-xs text-slate-400 mt-4 text-center">ผู้ทรงคุณวุฒิใช้รหัสประจำตัวที่ได้รับ · ผู้ดูแลระบบใช้รหัสผู้ดูแล</p>
+            </div>
+          </div>`;
+        const inp = document.getElementById('login-token'); if (inp) inp.focus();
+      },
+
+      doLogin(event) {
+        const inp = document.getElementById('login-token');
+        const btn = document.getElementById('login-btn');
+        const token = inp ? inp.value.trim() : '';
+        if (!token) { this.renderLoginScreen('กรุณากรอกรหัสเข้าใช้งาน'); return; }
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจสอบ...'; }
+        fetch(this.gasUrl + '?action=auth&token=' + encodeURIComponent(token))
+          .then(res => res.text())
+          .then(text => {
+            let r;
+            try { r = JSON.parse(text); } catch (e) { throw new Error('เชื่อมต่อระบบไม่ได้ (ตรวจการ Deploy เป็น Anyone)'); }
+            if (!r || !r.ok) throw new Error('รหัสไม่ถูกต้อง หรือบัญชีถูกปิดใช้งาน');
+            this.setAuth(r.role === 'admin' ? { role: 'admin' } : { role: 'expert', expertId: r.expert.id });
+            this.loadData();
+          })
+          .catch(err => this.renderLoginScreen(err.message || 'เข้าสู่ระบบไม่สำเร็จ'));
+      },
+
+      loadData() {
         document.getElementById('app-container').innerHTML = '<div class="flex justify-center items-center h-64"><div class="loader"></div></div>';
 
         // ดึงข้อมูลจาก Apps Script (คืน JSON ผ่าน doGet?action=getData)
@@ -515,11 +585,12 @@
             // จัดลำดับ/ป้ายชื่อระยะ R1 D1 R2 D2 (ทำหลังโหลด settings เพื่อให้ override ได้)
             MOCK_DATA.phases = this.normalizePhases(serverData.phases);
 
-            if (MOCK_EXPERTS.length > 0) {
-              appState.currentUser = MOCK_EXPERTS[0];
+            // ตั้งผู้ใช้ตามการเข้าสู่ระบบ
+            if (!this.resolveRole()) {
+              this.logout('รหัสผู้ประเมินไม่ถูกต้อง กรุณาเข้าสู่ระบบใหม่');
+              return;
             }
 
-            this.resolveRole();
             this.applySettings();
             this.updateUserLabel();
             this.render();
@@ -529,10 +600,19 @@
           });
       },
 
-      // ระบุตัวผู้ประเมิน/ผู้ดูแล จากพารามิเตอร์ในลิงก์ (แทน dropdown)
-      //   ?expert=Exp01  = เปิดในนามผู้ทรงคุณวุฒิรหัสนั้น
-      //   ?admin=1       = เปิดมุมมองผู้ดูแลระบบ
+      // ตั้งผู้ใช้ปัจจุบันจากการเข้าสู่ระบบ (คืน false ถ้ารหัสผู้ประเมินไม่ตรงกับใคร)
       resolveRole() {
+        const auth = this.getAuth();
+        if (!auth) return false;
+        if (auth.role === 'admin') { appState.isAdmin = true; appState.currentUser = MOCK_EXPERTS[0] || null; return true; }
+        const found = MOCK_EXPERTS.find(e => String(e.id) === String(auth.expertId));
+        if (!found) return false;
+        appState.currentUser = found;
+        appState.isAdmin = false;
+        return true;
+      },
+
+      _oldResolveRole() {
         const params = new URLSearchParams(location.search);
         if (params.get('admin') === '1' || params.get('view') === 'admin') {
           appState.isAdmin = true;
